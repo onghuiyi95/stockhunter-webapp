@@ -36,7 +36,14 @@
 | 7 | 股息 | `http://www.freeinfo.my/api/klse/getklsediv_bycode_v1.php` | `StkCode=<code>&req_date=YYYY-MM-DD` |
 | 8 | 业绩展望 | `http://www.freeinfo.my/api/klse/getklse_prospect_v1.php` | `req_date=YYYY-MM-DD` |
 | 9 | 业绩(个股) | `http://www.freeinfo.my/api/klse/getklseprospect_bycode_v1.php` | `stk_code=<code>&q_year=&PostId=&KeywId=&req_date=YYYY-MM-DD&os=and` |
-| 10 | **选股** | `http://www.klsestock.com/json_filter_v1.php` | `id=20&bo=&yh=&tp=&gw=&nc=&iw=&day=&type=&trend=&pri_mi=&pri_mx=&sector=&ver=3.7.1&sn=own` |
+| 11 | 选股/筛选 | `http://www.klsestock.com/json_filter_v1.php` | `id=20&bo=&yh=&tp=&gw=&nc=&iw=&tr=&hl=&er=&type=&trend=&day=&sector=&pri_mi=&pri_mx=&pe=&pm=&ev=&dc=&cr=&ey=&roe=&dy=&pob=&evalue_ab=&m_cap_min=&m_cap_max=&t_share_min=&t_share_max=&ma1=&ma_c1=&ma2=&ma_c2=&ma3=&macd=&macd_day=&rsi_c=&rsi_v=&obv=&bb=&bb_day=&turn_ov_min=&turn_ov_max=&hammer=&harami=&haramicross=&engulfing=&piercing=&dojistar=&dragonflydoji=&marubozu=&invertedhammer=&takuri=&morningstar=&morningdojistar=&tristar=&kicking=&tasukigap=&abandonbaby=&threelinestrike=&threeoutside=&threewhitesoldiers=&ver=3.7.1&sn=own` |
+
+> **Screener 完整四层参数（2026-08-14 据 dex `Fragment_GrabStock.java` + 实机截图补全）：**
+> - **SA 信号**：`bo`(Breakout突破) `yh`(YearHigh年高) `tp`(TopProfit最高盈利) `gw`(GoldenCross金叉) `nc`(NetCash净现金) `iw`(Warrant权证) `tr`(TopRevenue最高营收) `hl`(EarningRecovery) `er`(Earning) — 勾选传 `1`；`type`(Report 1/4/7/10) `trend`(5 Star) `day`(TrendDay <N) `sector`(板块) `pri_mi`/`pri_mx`(股价区间)
+> - **FA 基本面**：`pe`(PE<) `pm`(ProfitMargin>) `ev`(EV/EBIT<) `dc`(Debt/Cash<) `cr`(CurrentRatio>) `ey`(EarningYield>) `roe`(ROE>) `dy`(DivYield>) `pob`(Price/Book<) `evalue_ab`(EV上限M) `m_cap_min/max`(市值M) `t_share_min/max`(总股本M)
+> - **TA 技术**：`ma1`+`ma_c1`(MA类型: Price/EMA10/EMA20/EMA25/EMA50/SMA10/SMA20/SMA60/SMA200) `ma2`+`ma_c2`-风格 `ma3` `macd`+`macd_day` `rsi_c`(条件)+`rsi_v`(值) `obv` `bb`+`bb_day` `turn_ov_min/max`(换手)
+> - **CA K线形态**（19 种，勾选传 `1`）：hammer/harami/haramicross/engulfing/piercing/dojistar/dragonflydoji/marubozu/invertedhammer/takuri/morningstar/morningdojistar/tristar/kicking/tasukigap/abandonbaby/threelinestrike/threeoutside/threewhitesoldiers
+> - 实测：默认请求返回 **1096 条**（全市场），`bo=1&nc=1` 返回 **4 条**（筛选生效）
 | 11 | 图表-ADAM | `http://www.stockhunter.my/api/klse/get_chart_adam.php` | `StkCode=<code>&req_date=YYYY-MM-DD` |
 | 12 | 图表-动量板块 | `http://www.stockhunter.my/api/klse/get_chart_mom_subsector.php` | `req_date=YYYY-MM-DD` |
 | 13 | 图表-Happy/Panic | `http://www.freeinfo.my/api/klse/get_chart_happypanic.php` | `req_date=YYYY-MM-DD` |
