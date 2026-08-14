@@ -31,6 +31,8 @@
   iframe{border:1px solid #ddd;width:100%;height:520px;background:#fff}
   .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
   .note{color:#b8860b;font-size:12px;margin-top:8px;background:#fff8e1;padding:6px 8px;border-radius:4px;border:1px solid #ffe0b2}
+  .clickable{cursor:pointer;border-left:4px solid #0e6e7d}
+  .clickable:hover{background:#e0f7fa}
   .filters fieldset{border:1px solid #d0d7de;border-radius:6px;margin-bottom:10px}
   .filters legend{font-weight:700;color:#0e6e7d;padding:0 6px}
   .filters label{display:inline-block;margin:3px 8px 3px 0;font-size:13px}
@@ -388,13 +390,36 @@ async function loadIndex(){ const rv=document.getElementById('idx-region').value
 
 // ===== 新闻 =====
 async function loadNews(){ const k=document.getElementById('news-kind').value, s=document.getElementById('news-stk').value; const el=document.getElementById('news-body'); el.className='loading'; el.textContent='加载中…';
-  try{ const base = k==='social' ? "http://freeinfo.my/api/klse/getklse_social_v1.php" : "http://www.freeinfo.my/api/klse/getklsenews_bycode_v2.php";
-    const p = `StkCode=${s}&PostId=&Cat=&Lang=1${k==='social'?'':'&keywId='+ (s?CUR.stockcode:'')}&req_date=${today()}`;
-    const data=await getJSON(shUrl(base,p,true));
+  try{
+    if(k==='social'){
+      // 第一层: 源列表
+      const d=await getJSONR(shUrl("http://www.freeinfo.my/api/klse/getklse_social_v1.php","StkCode=&PostId=&Cat=&Lang=1&req_date="+today(),true));
+      const rv=d&&d.result_value;
+      if(!rv||!rv.length){ el.className=''; el.innerHTML='<span class="note">⚠️ 无社媒源</span>'; return; }
+      let h='<div class="card"><b>社媒源</b>（点击加载该源文章）</div>';
+      rv.forEach(src=>{
+        const bid=src.brand_id; const nm=src.title_cn||src.title;
+        h+=`<div class="card clickable" onclick="loadSocialSource('${bid}','${nm.replace(/'/g,"")}')"><b>${nm}</b> <small>${src.title}</small> ${src.TotalQty?('· '+src.TotalQty+'篇'):''}</div>`;
+      });
+      el.className=''; el.innerHTML=h; return;
+    }
+    const base="http://www.freeinfo.my/api/klse/getklsenews_bycode_v2.php";
+    const p=`StkCode=${s}&PostId=&Cat=&Lang=1${k==='social'?'':'&keywId='+ (s?CUR.stockcode:'')}&req_date=${today()}`;
+    const data=await getJSONR(shUrl(base,p,true));
     const rv = data && data.result_value;
-    if(!rv){ el.className=''; el.innerHTML=`<div class="note">⚠️ 服务端返回: ${data&&data.err_msg?data.err_msg:'无数据'}（freeinfo.my 的 news/社交接口现校验游客 access_token；该 token 由 App 注册时获取并缓存，纯网页游客态被拒。待抓包补全）</div>`; return; }
+    if(!rv){ el.className=''; el.innerHTML=`<div class="note">⚠️ 服务端返回: ${data&&data.err_msg?data.err_msg:'无数据'}</div>`; return; }
     let h=''; rv.slice(0,40).forEach(n=>{ h+=`<div class="card"><b>${n.title||n.headline||'(无标题)'}</b><br><small>${n.date||n.time||''} · ${n.source||''}</small><br>${n.summary||n.desc||''}</div>`; });
     el.className=''; el.innerHTML=h||'(无结果)';
+  }catch(e){ el.textContent='错误: '+e; }
+}
+async function loadSocialSource(bid,name){ const el=document.getElementById('news-body'); el.className='loading'; el.textContent='加载 '+name+' 中…';
+  try{
+    const d=await getJSONR(shUrl("http://www.freeinfo.my/api/klse/getklsenews_bycode_v2.php",`StkCode=&PostId=&Cat=s&Lang=1&BrandId=${bid}&req_date=${today()}`,true));
+    const rv=d&&d.result_value;
+    if(!rv||!rv.length){ el.className=''; el.innerHTML=`<div class="note">⚠️ ${name} 当前服务端无文章（可能已下线或数据在 klsegroup.com 死域）</div>`; return; }
+    let h=`<div class="card"><b>${name}</b> · ${rv.length}篇</div>`;
+    rv.slice(0,40).forEach(n=>{ h+=`<div class="card"><b>${n.title||n.headline||''}</b><br><small>${n.date||n.time||''} · ${n.source||''}</small><br>${n.summary||n.desc||''}</div>`; });
+    el.className=''; el.innerHTML=h;
   }catch(e){ el.textContent='错误: '+e; }
 }
 
