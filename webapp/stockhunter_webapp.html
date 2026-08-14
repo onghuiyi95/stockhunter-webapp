@@ -100,18 +100,75 @@
 
   <!-- 选股 -->
   <section class="panel" id="p-screener">
-    <div class="row">
-      <label>突破 <input type="checkbox" id="f-bo"></label>
-      <label>年高 <input type="checkbox" id="f-yh"></label>
-      <label>最高盈利 <input type="checkbox" id="f-tp"></label>
-      <label>金叉 <input type="checkbox" id="f-gw"></label>
-      <label>净现金 <input type="checkbox" id="f-nc"></label>
-      <label>权证 <input type="checkbox" id="f-iw"></label>
-    </div>
-    <div class="row">
-      价格 <input id="f-pmin" placeholder="min" size="6"> - <input id="f-pmax" placeholder="max" size="6">
-      板块 <input id="f-sector" placeholder="如 CONSUMER" size="14">
-      <button class="go" onclick="loadScreener()">选股</button>
+    <div class="filters">
+      <fieldset><legend>SA 信号</legend>
+        <label>Breakout 突破 <input type="checkbox" id="f-bo"></label>
+        <label>YearHigh 年高 <input type="checkbox" id="f-yh"></label>
+        <label>TopProfit 最高盈利 <input type="checkbox" id="f-tp"></label>
+        <label>GoldenCross 金叉 <input type="checkbox" id="f-gw"></label>
+        <label>NetCash 净现金 <input type="checkbox" id="f-nc"></label>
+        <label>Warrant 权证 <input type="checkbox" id="f-iw"></label>
+        <label>TopRevenue 最高营收 <input type="checkbox" id="f-tr"></label>
+        <label>EarningRecovery <input type="checkbox" id="f-hl"></label>
+        <label>Earning <input type="checkbox" id="f-er"></label>
+        <label>Report <select id="f-report"><option value="">-</option><option>1</option><option>4</option><option>7</option><option>10</option></select></label>
+        <label>Trend <select id="f-trend"><option value="">-</option><option value="5">5 Star</option></select></label>
+        <label>TrendDay &lt; <input id="f-trendday" size="4" placeholder="9"></label>
+        <label>Sector <input id="f-sector" placeholder="如 CONSUMER" size="14"></label>
+        <label>股价 <input id="f-pmin" placeholder="min" size="5"> - <input id="f-pmax" placeholder="max" size="5"></label>
+      </fieldset>
+      <fieldset><legend>FA 基本面</legend>
+        <label>PE &lt; <input id="f-pe" size="6" placeholder="10"></label>
+        <label>ProfitMargin &gt; <input id="f-pm" size="6" placeholder="10"></label>
+        <label>EV/EBIT &lt; <input id="f-ev" size="6" placeholder="10"></label>
+        <label>Debt/Cash &lt; <input id="f-dc" size="6" placeholder="1"></label>
+        <label>CurrentRatio &gt; <input id="f-cr" size="6" placeholder="2"></label>
+        <label>EarningYield &gt; <input id="f-ey" size="6" placeholder="10"></label>
+        <label>ROE &gt; <input id="f-roe" size="6" placeholder="10"></label>
+        <label>DivYield &gt; <input id="f-dy" size="6" placeholder="3"></label>
+        <label>Price/Book &lt; <input id="f-pob" size="6" placeholder="1.5"></label>
+        <label>EV(M) &lt; <input id="f-evalue" size="8" placeholder="500"></label>
+        <label>MktCap(M) <input id="f-mcapmin" size="6" placeholder="0"> - <input id="f-mcapmax" size="8" placeholder="2000"></label>
+        <label>TotalShare(M) <input id="f-tsmin" size="6" placeholder="0"> - <input id="f-tsmax" size="8" placeholder="500"></label>
+      </fieldset>
+      <fieldset><legend>TA 技术</legend>
+        <label>MA1 <input id="f-ma1" size="6" placeholder="如 0"></label>
+        <label>MA1类型 <select id="f-mac1"><option value="">-</option><option>Price</option><option>EMA10</option><option>EMA20</option><option>EMA25</option><option>EMA50</option><option>SMA10</option><option>SMA20</option><option>SMA60</option><option>SMA200</option></select></label>
+        <label>MA2 <input id="f-ma2" size="6"></label>
+        <label>MA2类型 <select id="f-mac2"><option value="">-</option><option>Price</option><option>EMA10</option><option>EMA20</option><option>EMA25</option><option>EMA50</option><option>SMA10</option><option>SMA20</option><option>SMA60</option><option>SMA200</option></select></label>
+        <label>MA3 <input id="f-ma3" size="6"></label>
+        <label>MACD <input id="f-macd" size="6"></label>
+        <label>MACD天数 <input id="f-macdday" size="4"></label>
+        <label>RSI条件 <input id="f-rsic" size="4"></label>
+        <label>RSI值 <input id="f-rsiv" size="6"></label>
+        <label>OBV <input id="f-obv" size="6"></label>
+        <label>布林 <input id="f-bb" size="6"></label>
+        <label>布林天数 <input id="f-bbday" size="4"></label>
+        <label>换手min <input id="f-tomin" size="6"></label>
+        <label>换手max <input id="f-tomax" size="6"></label>
+      </fieldset>
+      <fieldset><legend>CA K线形态</legend>
+        <label><input type="checkbox" id="f-ca-hammer"> Hammer</label>
+        <label><input type="checkbox" id="f-ca-harami"> Harami</label>
+        <label><input type="checkbox" id="f-ca-haramicross"> HaramiCross</label>
+        <label><input type="checkbox" id="f-ca-engulfing"> Engulfing</label>
+        <label><input type="checkbox" id="f-ca-piercing"> Piercing</label>
+        <label><input type="checkbox" id="f-ca-dojistar"> DojiStar</label>
+        <label><input type="checkbox" id="f-ca-dragonflydoji"> DragonflyDoji</label>
+        <label><input type="checkbox" id="f-ca-marubozu"> Marubozu</label>
+        <label><input type="checkbox" id="f-ca-invertedhammer"> InvertedHammer</label>
+        <label><input type="checkbox" id="f-ca-takuri"> Takuri</label>
+        <label><input type="checkbox" id="f-ca-morningstar"> MorningStar</label>
+        <label><input type="checkbox" id="f-ca-morningdojistar"> MorningDojiStar</label>
+        <label><input type="checkbox" id="f-ca-tristar"> TriStar</label>
+        <label><input type="checkbox" id="f-ca-kicking"> Kicking</label>
+        <label><input type="checkbox" id="f-ca-tasukigap"> TasukiGap</label>
+        <label><input type="checkbox" id="f-ca-abandonbaby"> AbandonBaby</label>
+        <label><input type="checkbox" id="f-ca-threelinestrike"> ThreeLineStrike</label>
+        <label><input type="checkbox" id="f-ca-threeoutside"> ThreeOutside</label>
+        <label><input type="checkbox" id="f-ca-threewhitesoldiers"> ThreeWhiteSoldiers</label>
+      </fieldset>
+      <button class="go" onclick="loadScreener()">选股 (SA/FA/TA/CA)</button>
     </div>
     <div id="screener-body" class="loading"></div>
   </section>
@@ -277,13 +334,25 @@ async function loadNews(){ const k=document.getElementById('news-kind').value, s
   }catch(e){ el.textContent='错误: '+e; }
 }
 
-// ===== 选股 =====
-async function loadScreener(){ const el=document.getElementById('screener-body'); el.className='loading'; el.textContent='加载中…';
+// ===== 选股 (完整 SA/FA/TA/CA 四层) =====
+async function loadScreener(){
+  const el=document.getElementById('screener-body'); el.className='loading'; el.textContent='加载中…';
   const g=v=>document.getElementById(v).checked?'1':'';
-  const p=`id=20&bo=${g('f-bo')}&yh=${g('f-yh')}&tp=${g('f-tp')}&gw=${g('f-gw')}&nc=${g('f-nc')}&iw=${g('f-iw')}&day=&type=&trend=&pri_mi=${document.getElementById('f-pmin').value}&pri_mx=${document.getElementById('f-pmax').value}&sector=${document.getElementById('f-sector').value}&ver=3.7.1&sn=own`;
+  const val=v=>document.getElementById(v).value;
+  // SA
+  const sa=`bo=${g('f-bo')}&yh=${g('f-yh')}&tp=${g('f-tp')}&gw=${g('f-gw')}&nc=${g('f-nc')}&iw=${g('f-iw')}&tr=${g('f-tr')}&hl=${g('f-hl')}&er=${g('f-er')}`;
+  const sa2=`type=${val('f-report')}&trend=${val('f-trend')}&day=${val('f-trendday')}&sector=${val('f-sector')}&pri_mi=${val('f-pmin')}&pri_mx=${val('f-pmax')}`;
+  // FA
+  const fa=`pe=${val('f-pe')}&pm=${val('f-pm')}&ev=${val('f-ev')}&dc=${val('f-dc')}&cr=${val('f-cr')}&ey=${val('f-ey')}&roe=${val('f-roe')}&dy=${val('f-dy')}&pob=${val('f-pob')}&evalue_ab=${val('f-evalue')}&m_cap_min=${val('f-mcapmin')}&m_cap_max=${val('f-mcapmax')}&t_share_min=${val('f-tsmin')}&t_share_max=${val('f-tsmax')}`;
+  // TA
+  const ta=`ma1=${val('f-ma1')}&ma_c1=${val('f-mac1')}&ma2=${val('f-ma2')}&ma_c2=${val('f-mac2')}&ma3=${val('f-ma3')}&macd=${val('f-macd')}&macd_day=${val('f-macdday')}&rsi_c=${val('f-rsic')}&rsi_v=${val('f-rsiv')}&obv=${val('f-obv')}&bb=${val('f-bb')}&bb_day=${val('f-bbday')}&turn_ov_min=${val('f-tomin')}&turn_ov_max=${val('f-tomax')}`;
+  // CA (19 形态)
+  const caOpts=['hammer','harami','haramicross','engulfing','piercing','dojistar','dragonflydoji','marubozu','invertedhammer','takuri','morningstar','morningdojistar','tristar','kicking','tasukigap','abandonbaby','threelinestrike','threeoutside','threewhitesoldiers'];
+  const ca=caOpts.map(c=>`${c}=${g('f-ca-'+c)}`).join('&');
+  const p=`id=20&${sa}&${sa2}&${fa}&${ta}&${ca}&ver=3.7.1&sn=own`;
   try{ const u="http://www.klsestock.com/json_filter_v1.php?"+encodeURIComponent("hash="+aesEncrypt(p))+"&os=and";
     const d=await getJSON(u); let h='<table><tr><th>代码</th><th>名</th><th>价</th><th>PE</th><th>ROE</th><th>DY</th><th>MACD</th><th>RSI</th></tr>';
-    arr(d).slice(0,60).forEach(r=>{ h+=`<tr><td>${r.stockcode||''}</td><td>${r.stockname||''}</td><td>${r.price||''}</td><td>${r.pe||''}</td><td>${r.roe||''}</td><td>${r.dy||''}</td><td>${r.macd||''}</td><td>${r.rsi||''}</td></tr>`; });
+    arr(d).slice(0,80).forEach(r=>{ h+=`<tr><td>${r.stockcode||''}</td><td>${r.stockname||''}</td><td>${r.price||''}</td><td>${r.pe||''}</td><td>${r.roe||''}</td><td>${r.dy||''}</td><td>${r.macd||''}</td><td>${r.rsi||''}</td></tr>`; });
     h+='</table>'; el.className=''; el.innerHTML=h||'(无结果)';
   }catch(e){ el.textContent='错误: '+e; }
 }
