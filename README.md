@@ -22,8 +22,9 @@
 - [10. 验证结果](#10-验证结果)
 - [11. API 数据分析与后端原理](#11-api-数据分析与后端原理)
 - [12. API 完整参数手册](#12-api-完整参数手册)
-- [13. 策略模块解密 (Strategy List)](#13-策略模块解密-strategy-list)
-- [14. 文件结构](#14-文件结构)
+- [13. 后端运作方式还原 (数据库/管线)](#13-后端运作方式还原-数据库管线)
+- [14. 策略模块解密 (Strategy List)](#14-策略模块解密-strategy-list)
+- [15. 文件结构](#15-文件结构)
 
 ---
 
@@ -356,7 +357,20 @@ AES 加密与 APK 字节级一致（key=`Kls3@p#GI3ch!qEh`，CBC，IV=0，PKCS7�
 
 ---
 
-## 13. 策略模块解密 (Strategy List)
+## 13. 后端运作方式还原 (数据库/管线)
+
+回答核心问题：**API 返回什么数据？背后怎么运作？用什么数据库？**
+
+详见 **[BACKEND_ARCHITECTURE.md](BACKEND_ARCHITECTURE.md)**：
+- 6 类接口返回数据结构（行情/选股/榜单/新闻社媒/图表/统一响应壳）
+- 两套接口体系：AES 加密的 Screener + 明文预生成的 `json_cache`
+- 每日批处理管线推断（拉行情→算指标→打分形态→生成预计算宽表→物化榜单→爬新闻）
+- 数据库推断：**PHP + MySQL**（LAMP），附完整推测表结构（stocks/daily_quote/financials/tech_indicators/candle_patterns/news/social_brand/cache_lists）
+- 对"复刻整个 APK"的指引：需自建指标引擎 + MySQL + 定时任务
+
+---
+
+## 14. 策略模块解密 (Strategy List)
 
 App 内 Strategy List 的 6 个策略（Growth/Sector/Trend/Report/Hot/Top），来源是 Google Play 描述里的 goo.gl 短链 → Google Slides，**已完整抓取文字内容**。每个策略对应一组 `json_cache` 预设榜单接口。
 
@@ -364,7 +378,7 @@ App 内 Strategy List 的 6 个策略（Growth/Sector/Trend/Report/Hot/Top），
 
 ---
 
-## 14. 文件结构
+## 15. 文件结构
 
 ```
 stockhunter-webapp/
@@ -379,6 +393,7 @@ stockhunter-webapp/
 │   ├── STOCKHUNTER_REVERSE_REPORT.md   # 详细逆向报告
 │   ├── API_ANALYSIS.md                 # API 数据分析与后端原理推断
 │   ├── API_PARAMETERS.md               # ⭐ 全部接口加密参数逐字 + 截图功能映射
+│   ├── BACKEND_ARCHITECTURE.md         # ⭐ 后端运作方式还原 (数据库/管线)
 │   ├── STRATEGY_GUIDE.md               # ⭐ 策略模块(Strategy List)完整解密
 │   ├── stockhunter_extract_strings.py   # dex 字符串提取脚本
 │   ├── stockhunter_dex_strings.txt       # 提取出的全部 API 字符串

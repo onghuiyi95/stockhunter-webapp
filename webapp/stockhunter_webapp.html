@@ -251,7 +251,7 @@ async function cacheList(id,title){ const el=document.getElementById('market-bod
 
 // ===== 热门 =====
 async function loadHot(){ const d=document.getElementById('hot-day').value; const el=document.getElementById('hot-body'); el.className='loading'; el.textContent='加载中…';
-  try{ const u=shUrl("http://freeinfo.my/api/klse/getklse_hotstk_v1.php","day="+d+"&Lang=1&req_date="+today(),false);
+  try{ const u=shUrl("http://freeinfo.my/api/klse/getklse_hotstk_v1.php","day="+d+"&Lang=1&req_date="+today(),true);
     const data=await getJSON(u); let h='<table><tr><th>代码</th><th>名称</th><th>价</th><th>涨跌%</th><th>量</th></tr>';
     arr(data).slice(0,60).forEach(r=>{ h+=`<tr><td>${r.stk_code||r.stockcode||''}</td><td>${r.stockname||''}</td><td>${r.price||r.pri_now||''}</td><td>${pct(r.chg_pct||r.pri_chg_pcn)}</td><td>${r.volume||r.volumn||''}</td></tr>`; });
     h+='</table>'; el.className=''; el.innerHTML=h;
@@ -260,7 +260,7 @@ async function loadHot(){ const d=document.getElementById('hot-day').value; cons
 
 // ===== 指数 =====
 async function loadIndex(){ const r=document.getElementById('idx-region').value; const el=document.getElementById('index-body'); el.className='loading'; el.textContent='加载中…';
-  try{ const u=shUrl("http://www.freeinfo.my/api/klse/getklse_index_v1.php","idx_type=index&region="+r+"&location=&req_date="+today(),false);
+  try{ const u=shUrl("http://www.freeinfo.my/api/klse/getklse_index_v1.php","idx_type=index&region="+r+"&location=&req_date="+today(),true);
     const d=await getJSON(u); let h='<table><tr><th>名称</th><th>点位</th><th>涨跌</th><th>%</th></tr>';
     arr(d).slice(0,60).forEach(x=>{ h+=`<tr><td>${x.name||x.idx_name||''}</td><td>${x.point||x.value||''}</td><td>${pct(x.chg)}</td><td>${pct(x.chg_pct)}</td></tr>`; });
     h+='</table>'; el.className=''; el.innerHTML=h;
@@ -271,7 +271,7 @@ async function loadIndex(){ const r=document.getElementById('idx-region').value;
 async function loadNews(){ const k=document.getElementById('news-kind').value, s=document.getElementById('news-stk').value; const el=document.getElementById('news-body'); el.className='loading'; el.textContent='加载中…';
   try{ const base = k==='social' ? "http://freeinfo.my/api/klse/getklse_social_v1.php" : "http://www.freeinfo.my/api/klse/getklsenews_bycode_v2.php";
     const p = `StkCode=${s}&PostId=&Cat=&Lang=1${k==='social'?'':'&keywId='}&req_date=${today()}`;
-    const data=await getJSON(shUrl(base,p,false)); let h='';
+    const data=await getJSON(shUrl(base,p,true)); let h='';
     arr(data).slice(0,40).forEach(n=>{ h+=`<div class="card"><b>${n.title||n.headline||'(无标题)'}</b><br><small>${n.date||n.time||''} · ${n.source||''}</small><br>${n.summary||n.desc||''}</div>`; });
     el.className=''; el.innerHTML=h||'(无结果)';
   }catch(e){ el.textContent='错误: '+e; }
