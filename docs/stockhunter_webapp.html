@@ -208,10 +208,10 @@ function aesEncrypt(plain){
 function today(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 function shUrl(base, params, enc=true){
   const hash = enc ? aesEncrypt(params) : params;
-  return base + "?" + (enc?"hash="+hash+"&os=and":"id="+hash);
+  return base + "?" + (enc?"hash="+encodeURIComponent(hash)+"&os=and":"id="+hash);
 }
 async function getJSON(targetUrl){
-  const r = await fetch(PROXY + encodeURIComponent(targetUrl), {headers:{"User-Agent":"Mozilla/5.0","Origin":ORIGIN}});
+  const r = await fetch(PROXY + targetUrl, {headers:{"User-Agent":"Mozilla/5.0","Origin":ORIGIN}});
   return await r.json();
 }
 const pct = v => v==null?'':(v>0?'<span class="up">+'+v+'</span>':'<span class="down">'+v+'</span>');
@@ -254,7 +254,7 @@ async function loadStock(){
   try{
     if(SCREENER_ALL.length===0){
       const p="id=20&bo=&yh=&tp=&gw=&nc=&iw=&tr=&hl=&er=&type=&trend=&day=&sector=&pri_mi=&pri_mx=&pe=&pm=&ev=&dc=&cr=&ey=&roe=&dy=&pob=&evalue_ab=&m_cap_min=&m_cap_max=&t_share_min=&t_share_max=&ma1=&ma_c1=&ma2=&ma_c2=&ma3=&macd=&macd_day=&rsi_c=&rsi_v=&obv=&bb=&bb_day=&turn_ov_min=&turn_ov_max=&hammer=&harami=&haramicross=&engulfing=&piercing=&dojistar=&dragonflydoji=&marubozu=&invertedhammer=&takuri=&morningstar=&morningdojistar=&tristar=&kicking=&tasukigap=&abandonbaby=&threelinestrike=&threeoutside=&threewhitesoldiers=&ver=3.7.1&sn=own";
-      const u="http://www.klsestock.com/json_filter_v1.php?hash="+aesEncrypt(p)+"&os=and";
+      const u="http://www.klsestock.com/json_filter_v1.php?hash="+encodeURIComponent(aesEncrypt(p))+"&os=and";
       SCREENER_ALL=await getJSON(u);
     }
     const r=(SCREENER_ALL.find(x=>String(x.stockcode).trim()===code))||{};
@@ -367,7 +367,7 @@ async function loadScreener(){
   const caOpts=['hammer','harami','haramicross','engulfing','piercing','dojistar','dragonflydoji','marubozu','invertedhammer','takuri','morningstar','morningdojistar','tristar','kicking','tasukigap','abandonbaby','threelinestrike','threeoutside','threewhitesoldiers'];
   const ca=caOpts.map(c=>`${c}=${g('f-ca-'+c)}`).join('&');
   const p=`id=20&${sa}&${sa2}&${fa}&${ta}&${ca}&ver=3.7.1&sn=own`;
-  try{ const u="http://www.klsestock.com/json_filter_v1.php?hash="+aesEncrypt(p)+"&os=and";
+  try{ const u="http://www.klsestock.com/json_filter_v1.php?hash="+encodeURIComponent(aesEncrypt(p))+"&os=and";
     const d=await getJSON(u); let h='<table><tr><th>代码</th><th>名</th><th>价</th><th>PE</th><th>ROE</th><th>DY</th><th>MACD</th><th>RSI</th></tr>';
     arr(d).slice(0,80).forEach(r=>{ h+=`<tr><td>${r.stockcode||''}</td><td>${r.stockname||''}</td><td>${r.price||''}</td><td>${r.pe||''}</td><td>${r.roe||''}</td><td>${r.dy||''}</td><td>${r.macd||''}</td><td>${r.rsi||''}</td></tr>`; });
     h+='</table>'; el.className=''; el.innerHTML=h||'(无结果)';
@@ -380,7 +380,7 @@ async function loadChart(){ const t=document.getElementById('chart-type').value,
   if(t==='adam'){ base="http://www.stockhunter.my/api/klse/get_chart_adam.php"; params="StkCode="+code+"&req_date="+today(); }
   else if(t==='mom'){ base="http://www.stockhunter.my/api/klse/get_chart_mom_subsector.php"; params="req_date="+today(); }
   else { base="http://www.freeinfo.my/api/klse/get_chart_happypanic.php"; params="req_date="+today(); }
-  const target=base+"?"+(enc?("hash="+aesEncrypt(params)+"&os=and"):params);
+  const target=base+"?"+(enc?("hash="+encodeURIComponent(aesEncrypt(params))+"&os=and"):params);
   document.getElementById('chart-iframe').src=PROXY+encodeURIComponent(target);
 }
 </script>
