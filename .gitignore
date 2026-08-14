@@ -1,0 +1,28 @@
+# 依赖 (Python)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+pip-log.txt
+
+# 敏感 (如有)
+.env
+*.secret
+credentials.json
+*.token
+
+# 系统
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 大文件
+*.apk
+*.dex
+*.zip
+
+# 临时
+*.log
+tmp/
