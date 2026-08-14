@@ -26,7 +26,9 @@
 |---|---|---|---|
 | 1 | 行情 | `http://freeinfo.my/api/klse/getcurresult_v1.php` | `req_date=YYYY-MM-DD` |
 | 2 | 指数 | `http://www.freeinfo.my/api/klse/getklse_index_v1.php` | `idx_type=index&region=ASIA&location=&req_date=YYYY-MM-DD` |
-| 2b | 期货/商品/外汇 | `http://www.freeinfo.my/api/klse/getklse_index_v1.php` | `idx_type=future&region=&location=<country>&req_date=YYYY-MM-DD` |
+| 2b | 期货/商品/外汇 | `http://www.freeinfo.my/api/klse/getklse_index_v1.php` | `idx_type=future&region=<ASIA|EURO|NSAM>&location=&req_date=YYYY-MM-DD` |
+
+> ⚠️ **future 类型实测行为（2026-08-14 查实）**：返回的是**地区分组骨架**（region=ASIA/EURO/NSAM 对应 location=China/UK/US），具体合约字段（`shortCode`/`idxDesc`/`idxOpen`/`idx1st`/`idx1stChg`）**全部为 null**。带 `location=United States` 直接返回 null。即：服务端当前仅返回期货地区分类，CPO/MYR/USD/KLCI 期货的具体明细接口**已下线或需 App 内部未暴露的二级请求**。**结论：future 类型已无法取到合约级数据，标记 PARTIAL。**
 | 3 | 热门股 | `http://freeinfo.my/api/klse/getklse_hotstk_v1.php` | `day=1&Lang=1&req_date=YYYY-MM-DD` |
 | 4 | 新闻(个股) | `http://www.freeinfo.my/api/klse/getklsenews_bycode_v2.php` | `StkCode=<code>&PostId=&Cat=&Lang=1&keywId=<id>&req_date=YYYY-MM-DD` |
 | 5 | 社媒讨论 | `http://freeinfo.my/api/klse/getklse_social_v1.php` | `StkCode=&PostId=&Cat=&Lang=1&req_date=YYYY-MM-DD` |
