@@ -344,9 +344,11 @@ async function loadIndex(){ const r=document.getElementById('idx-region').value;
 // ===== 新闻 =====
 async function loadNews(){ const k=document.getElementById('news-kind').value, s=document.getElementById('news-stk').value; const el=document.getElementById('news-body'); el.className='loading'; el.textContent='加载中…';
   try{ const base = k==='social' ? "http://freeinfo.my/api/klse/getklse_social_v1.php" : "http://www.freeinfo.my/api/klse/getklsenews_bycode_v2.php";
-    const p = `StkCode=${s}&PostId=&Cat=&Lang=1${k==='social'?'':'&keywId='}&req_date=${today()}`;
-    const data=await getJSON(shUrl(base,p,true)); let h='';
-    arr(data).slice(0,40).forEach(n=>{ h+=`<div class="card"><b>${n.title||n.headline||'(无标题)'}</b><br><small>${n.date||n.time||''} · ${n.source||''}</small><br>${n.summary||n.desc||''}</div>`; });
+    const p = `StkCode=${s}&PostId=&Cat=&Lang=1${k==='social'?'':'&keywId='+ (s?CUR.stockcode:'')}&req_date=${today()}`;
+    const data=await getJSON(shUrl(base,p,true));
+    const rv = data && data.result_value;
+    if(!rv){ el.className=''; el.innerHTML=`<div class="note">⚠️ 服务端返回: ${data&&data.err_msg?data.err_msg:'无数据'}（news/社交接口现需 App 登录 AccessToken，游客身份被拒）</div>`; return; }
+    let h=''; rv.slice(0,40).forEach(n=>{ h+=`<div class="card"><b>${n.title||n.headline||'(无标题)'}</b><br><small>${n.date||n.time||''} · ${n.source||''}</small><br>${n.summary||n.desc||''}</div>`; });
     el.className=''; el.innerHTML=h||'(无结果)';
   }catch(e){ el.textContent='错误: '+e; }
 }
