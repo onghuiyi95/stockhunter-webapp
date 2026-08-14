@@ -211,7 +211,7 @@ function shUrl(base, params, enc=true){
   return base + "?" + (enc?"hash="+encodeURIComponent(hash)+"&os=and":"id="+hash);
 }
 async function getJSON(targetUrl){
-  const r = await fetch(PROXY + targetUrl, {headers:{"User-Agent":"Mozilla/5.0","Origin":ORIGIN}});
+  const r = await fetch(PROXY + encodeURIComponent(targetUrl), {headers:{"User-Agent":"Mozilla/5.0","Origin":ORIGIN}});
   return await r.json();
 }
 const pct = v => v==null?'':(v>0?'<span class="up">+'+v+'</span>':'<span class="down">'+v+'</span>');
