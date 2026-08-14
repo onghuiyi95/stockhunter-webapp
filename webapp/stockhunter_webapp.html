@@ -116,6 +116,11 @@
     <div id="screener-body" class="loading"></div>
   </section>
 
+  <!-- 策略 -->
+  <section class="panel" id="p-strategy">
+    <div id="strategy-body"></div>
+  </section>
+
   <!-- 图表 -->
   <section class="panel" id="p-chart">
     <div class="row">
@@ -151,12 +156,31 @@ async function getJSON(targetUrl){
 const pct = v => v==null?'':(v>0?'<span class="up">+'+v+'</span>':'<span class="down">'+v+'</span>');
 const arr = d => Array.isArray(d)?d : (d&&d.result_value)?d.result_value : (d&&Array.isArray(d.data)?d.data:[]);
 
+// ===== 策略页 (来自 App Strategy List 的 6 个 Google Slides) =====
+const STRATS = [
+  ["Growth","盈利增长策略","按公司盈利增长的 3 种方式筛选：ConQ(连续季度增长) / QoQ(环比) / YoY(同比)。好公司通过业务扩张、成本节约提升盈利→股价通常随之增长。","json_cache_v1.php?id=11/12/13"],
+  ["Sector","板块策略","基于 Bursa 官方板块分类选股：Construction / Consumer Products / Finance / Plantation / Properties 等。在某一板块内选龙头或低估股。","json_cache_v2.php?id=33 (+id=34&sector=)"],
+  ["Trend","趋势策略(星级)","用星级表示趋势：5=牛市上涨(股价>20MA&60MA) / 4=上涨 / 3=牛休整 / 2=底部反转 / 1=下跌。5星为强牛。","json_cache_v1.php?id=6&trend=2..5"],
+  ["Report","季报策略","按财报月分组(1~12月)，分3类：Jan/Apr/Jul/Oct、Feb/May/Aug/Nov、Mar/Jun/Sep/Dec。聪明钱常在季报前提前布局。","json_cache_v1.php?id=16&type=1/2/3"],
+  ["Hot","热门策略","高成交量=大量资金进出，可能机会也可能风险。买卖交易形成价量波动；内幕交易可能预示方向。","getklse_hotstk_v1 (DAY/WEEK/MONTH)"],
+  ["Top","榜首策略","按榜首类型筛选：TopProfit(季报利润新高) / Top Dividend(最高股息) / Top Net Cash(净现金最高) / Top Loss(亏损榜,避坑)。","json_cache_v1.php?id=17/18/22/43"],
+];
+function renderStrategy(){
+  const el=document.getElementById('strategy-body');
+  let h='<h2 style="color:#0e6e7d">📘 StockHunter 策略列表 (Strategy List)</h2><p style="color:#666;font-size:13px">来源：App 内 Strategy List 的 6 个 Google Slides（已完整抓取）</p><div class="grid">';
+  STRATS.forEach(([en,zh,desc,api])=>{
+    h+=`<div class="card" style="text-align:left"><h3 style="margin:0 0 6px;color:#0e6e7d">${en} · ${zh}</h3><p style="font-size:12px;color:#444;line-height:1.5">${desc}</p><small style="color:#888">接口: <code>${api}</code></small></div>`;
+  });
+  h+='</div>';
+  el.innerHTML=h;
+}
+
 // ===== 标签页 =====
-const tabs = [["p-stock","个股"],["p-market","行情/榜"],["p-hot","热门"],["p-index","指数"],["p-news","新闻"],["p-screener","选股"],["p-chart","图表"]];
+const tabs = [["p-stock","个股"],["p-market","行情/榜"],["p-hot","热门"],["p-index","指数"],["p-news","新闻"],["p-screener","选股"],["p-strategy","策略"],["p-chart","图表"]];
 const tb = document.getElementById('tabs');
 tabs.forEach(([id,label],i)=>{
   const b=document.createElement('button'); b.textContent=label; if(i===0)b.className='active';
-  b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.className='');b.className='active';document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');};
+  b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.className='');b.className='active';document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active'); if(id==='p-strategy') renderStrategy();};
   tb.appendChild(b);
 });
 document.getElementById('p-stock').classList.add('active');

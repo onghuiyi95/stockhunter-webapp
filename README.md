@@ -22,7 +22,8 @@
 - [10. 验证结果](#10-验证结果)
 - [11. API 数据分析与后端原理](#11-api-数据分析与后端原理)
 - [12. API 完整参数手册](#12-api-完整参数手册)
-- [13. 文件结构](#13-文件结构)
+- [13. 策略模块解密 (Strategy List)](#13-策略模块解密-strategy-list)
+- [14. 文件结构](#14-文件结构)
 
 ---
 
@@ -355,7 +356,15 @@ AES 加密与 APK 字节级一致（key=`Kls3@p#GI3ch!qEh`，CBC，IV=0，PKCS7�
 
 ---
 
-## 13. 文件结构
+## 13. 策略模块解密 (Strategy List)
+
+App 内 Strategy List 的 6 个策略（Growth/Sector/Trend/Report/Hot/Top），来源是 Google Play 描述里的 goo.gl 短链 → Google Slides，**已完整抓取文字内容**。每个策略对应一组 `json_cache` 预设榜单接口。
+
+详见 **[STRATEGY_GUIDE.md](STRATEGY_GUIDE.md)**。WebApp 已内置"策略"标签页渲染这 6 个策略说明。
+
+---
+
+## 14. 文件结构
 
 ```
 stockhunter-webapp/
@@ -370,6 +379,7 @@ stockhunter-webapp/
 │   ├── STOCKHUNTER_REVERSE_REPORT.md   # 详细逆向报告
 │   ├── API_ANALYSIS.md                 # API 数据分析与后端原理推断
 │   ├── API_PARAMETERS.md               # ⭐ 全部接口加密参数逐字 + 截图功能映射
+│   ├── STRATEGY_GUIDE.md               # ⭐ 策略模块(Strategy List)完整解密
 │   ├── stockhunter_extract_strings.py   # dex 字符串提取脚本
 │   ├── stockhunter_dex_strings.txt       # 提取出的全部 API 字符串
 │   └── stockhunter_test_screener.py      # 实测复现脚本

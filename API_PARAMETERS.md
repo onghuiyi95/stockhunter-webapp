@@ -25,7 +25,8 @@
 | # | 功能 | BASE_URL | 明文参数 (明文，加密前) |
 |---|---|---|---|
 | 1 | 行情 | `http://freeinfo.my/api/klse/getcurresult_v1.php` | `req_date=YYYY-MM-DD` |
-| 2 | 指数 | `http://www.freeinfo.my/api/klse/getklse_index_v1.php` | `idx_type=index&region=index&location=&req_date=YYYY-MM-DD` |
+| 2 | 指数 | `http://www.freeinfo.my/api/klse/getklse_index_v1.php` | `idx_type=index&region=ASIA&location=&req_date=YYYY-MM-DD` |
+| 2b | 期货/商品/外汇 | `http://www.freeinfo.my/api/klse/getklse_index_v1.php` | `idx_type=future&region=&location=<country>&req_date=YYYY-MM-DD` |
 | 3 | 热门股 | `http://freeinfo.my/api/klse/getklse_hotstk_v1.php` | `day=1&Lang=1&req_date=YYYY-MM-DD` |
 | 4 | 新闻(个股) | `http://www.freeinfo.my/api/klse/getklsenews_bycode_v2.php` | `StkCode=<code>&PostId=&Cat=&Lang=1&keywId=<id>&req_date=YYYY-MM-DD` |
 | 5 | 社媒讨论 | `http://freeinfo.my/api/klse/getklse_social_v1.php` | `StkCode=&PostId=&Cat=&Lang=1&req_date=YYYY-MM-DD` |
