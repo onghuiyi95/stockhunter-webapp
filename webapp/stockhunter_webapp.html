@@ -319,13 +319,14 @@ async function loadDividend(){ const el=document.getElementById('stock-body');
 async function loadWarrant(){ const el=document.getElementById('stock-body');
   if(!CUR.stockcode){ el.textContent='先查询个股'; return; }
   el.className='loading'; el.textContent='加载中…';
-  try{ const d=await postJSON("http://www.klsestock.com/json_cache_v2.php","id=38&code="+CUR.stockcode+"&ver=3.7.1&sn=own");
+  try{ const u="http://www.klsestock.com/json_cache_v2.php?hash="+encodeURIComponent(aesEncrypt("id=38&code="+CUR.stockcode+"&ver=3.7.1&sn=own"))+"&os=and";
+    const d=await getJSON(u);
     const rv=d&&d.result_value;
-    if(!rv||!rv.length){ el.className=''; el.innerHTML='<div class="card"><b>WARRANT</b><br><span class="note">⚠️ 权证端点 (json_cache_v2 id=38) 为 POST 接口，代理限制或已停服</span></div>'; return; }
+    if(!rv||!rv.length){ el.className=''; el.innerHTML='<div class="card"><b>WARRANT</b><br><span class="note">⚠️ 权证端点 (json_cache_v2 id=38) 当前返回空（数据源可能下线）</span></div>'; return; }
     let h='<div class="card"><b>WARRANT</b><table><tr><th>代码</th><th>名</th><th>价</th><th>涨跌%</th><th>量</th></tr>';
     rv.slice(0,30).forEach(w=>h+=`<tr><td>${w.code||w.stk_code||''}</td><td>${w.name||w.stockname||''}</td><td>${w.price||w.pri_now||''}</td><td>${pct(w.chg_pct)}</td><td>${w.volume||''}</td></tr>`);
     el.className=''; el.innerHTML=h+'</table></div>';
-  }catch(e){ el.className=''; el.innerHTML='<div class="card"><b>WARRANT</b><br><span class="note">⚠️ POST 接口代理限制</span></div>'; }
+  }catch(e){ el.className=''; el.innerHTML='<div class="card"><b>WARRANT</b><br><span class="note">⚠️ 接口异常</span></div>'; }
 }
 async function loadStockNews(){ const el=document.getElementById('stock-body'); el.className='loading'; el.textContent='加载中…';
   try{ const u=shUrl("http://www.freeinfo.my/api/klse/getklsenews_bycode_v2.php","StkCode="+CUR.stockcode+"&PostId=&Cat=&Lang=1&keywId="+CUR.stockcode+"&req_date="+today());
@@ -337,13 +338,14 @@ async function loadAdam(){ const code=CUR.stockcode||document.getElementById('st
   document.getElementById('chart-type').value='adam'; document.getElementById('chart-code').value=code; loadChart();
 }
 
-// ===== 行情/榜单 (json_cache) =====
+// ===== 行情/榜单 (json_cache, AES GET) =====
 async function cacheList(id,title){ const el=document.getElementById('market-body'); el.className='loading'; el.textContent='加载中… ('+title+')';
-  try{ const v = ['3','26','27','28','29'].includes(id)?'v2':'v1'; const u="http://www.klsestock.com/json_cache_"+v+".php?id="+id;
+  try{ const v = ['3','26','27','28','29','30','31','32','33','34','35','37','38','39','40','41','43'].includes(id)?'v2':'v1';
+    const u="http://www.klsestock.com/json_cache_"+v+".php?hash="+encodeURIComponent(aesEncrypt("id="+id))+"&os=and";
     const d=await getJSON(u); let h=`<div class="card"><b>${title}</b></div><table><tr><th>代码</th><th>名</th><th>价</th><th>涨跌%</th><th>量</th><th>PE</th><th>DY</th><th>ROE</th></tr>`;
     arr(d).slice(0,50).forEach(r=>h+=`<tr><td>${r.stk_code||r.code||''}</td><td>${r.stockname||r.name||''}</td><td>${r.price||r.pri_now||''}</td><td>${pct(r.chg_pct||r.pri_chg_pcn)}</td><td>${r.volume||r.volumn||''}</td><td>${r.pe||''}</td><td>${r.dy||''}</td><td>${r.roe||''}</td></tr>`);
     h+='</table>'; el.className=''; el.innerHTML=h;
-  }catch(e){ el.textContent='错误: '+e; }
+  }catch(e){ el.className=''; el.innerHTML='<span class="note">⚠️ '+title+' 加载失败</span>'; }
 }
 
 // ===== 热门 =====
