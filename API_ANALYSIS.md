@@ -6,19 +6,24 @@
 
 ---
 
-## 1. 实测数据快照（2026-08-14）
+## 1. 实测数据快照（2026-08-14，经 CORS 代理）
 
 | 接口 (域名) | 返回状态 | 说明 |
 |---|---|---|
-| `klsestock.com/json_filter_v1.php` (Screener) | ✅ **真实数据** | 106 字段/股，返回 4 只 |
-| `freeinfo.my/.../getcurresult_v1.php` | ⚠️ 空 `result_value:[]` | 所有日期均空 |
-| `freeinfo.my/.../getklse_index_v1.php` | ⚠️ 空 | `result_value:null` |
-| `freeinfo.my/.../getklse_hotstk_v1.php` | ⚠️ 空 `[]` | |
-| `freeinfo.my/.../getklsediv_bycode_v1.php` | ⚠️ 空 | 蓝筹均空 |
-| `freeinfo.my/.../getklsenews_bycode_v2.php` | ⚠️ 空 `No data found` | |
+| `klsestock.com/json_filter_v1.php` (Screener) | ✅ **真实数据** | 106 字段/股 |
+| `freeinfo.my/.../getklsediv_bycode_v1.php` | ✅ **真实数据** | MAXIS 股息 4 条 (App 截图证实) |
+| `freeinfo.my/.../getklsenews_bycode_v2.php` | ✅ **真实数据** | AHB削资 / CelcomDigi派息 新闻 |
+| `freeinfo.my/.../getklse_social_v1.php` | ✅ **真实数据** | 社媒源列表 |
+| `freeinfo.my/.../getklse_hotstk_v1.php` | ✅ **真实数据** | DAY/WEEK/MONTH 榜单 |
+| `freeinfo.my/.../check_app_ver.php` | ✅ **真实数据** | app_version=3.7.1 |
+| `freeinfo.my/.../getcurresult_v1.php` | ⚠️ 空 `result_value:[]` | 可能走个股详情专用接口 |
+| `freeinfo.my/.../getklse_index_v1.php` | ⚠️ 空 | 需确认 region 参数 |
+| `freeinfo.my/.../getklse_prospect_v1.php` | ⚠️ 空 | bycode 版本有数据 |
 | `stockhunter.my/.../get_chart_adam.php` | ✅ **内联 HTML** | 含完整 K线数组 |
 
-**核心结论**：当前**只有 `klsestock.com` 的 Screener 与 `stockhunter.my` 的图表接口在服役**；`freeinfo.my` 那组（行情/新闻/股息/指数）服务端返回空 —— 推测 `freeinfo.my` 数据源已停用或改版，App 实际可能也已切到 `klsestock.com`。**Screener 是唯一稳定可用的数据接口。**
+**核心结论（纠正旧误）**：`freeinfo.my` 接口**全部存活**（用户 App 实机截图证实 news/dividend/fundamental 均有数据）。此前"freeinfo.my 已退役"判断错误——真实原因是请求参数构造错（`Lang=en` 应 `Lang=1`、news 漏 `keywId`）。**活跃数据源 = freeinfo.my（行情/新闻/股息/指数）+ klsestock.com（screener）+ stockhunter.my（图表）**，三者并存。
+
+> 完整参数逐字见 **[API_PARAMETERS.md](API_PARAMETERS.md)**。
 
 ---
 

@@ -21,7 +21,8 @@
 - [9. 部署 (CORS 代理)](#9-部署-cors-代理)
 - [10. 验证结果](#10-验证结果)
 - [11. API 数据分析与后端原理](#11-api-数据分析与后端原理)
-- [12. 文件结构](#12-文件结构)
+- [12. API 完整参数手册](#12-api-完整参数手册)
+- [13. 文件结构](#13-文件结构)
 
 ---
 
@@ -346,7 +347,15 @@ AES 加密与 APK 字节级一致（key=`Kls3@p#GI3ch!qEh`，CBC，IV=0，PKCS7�
 
 ---
 
-## 12. 文件结构
+## 12. API 完整参数手册
+
+所有接口的**加密明文参数逐字列表** + App 截图功能映射，见 **[API_PARAMETERS.md](API_PARAMETERS.md)**。
+
+⚠️ 关键参数坑：`Lang` 取值 `1`(英)/`2`(中)/`""`(都含)，**不是 `en`**；news 必带 `keywId`。
+
+---
+
+## 13. 文件结构
 
 ```
 stockhunter-webapp/
@@ -359,7 +368,8 @@ stockhunter-webapp/
 │   └── templates/index.html      # Flask 前端
 ├── reverse_engineering/
 │   ├── STOCKHUNTER_REVERSE_REPORT.md   # 详细逆向报告
-│   ├── API_ANALYSIS.md                 # ⭐ API 数据分析与后端原理推断
+│   ├── API_ANALYSIS.md                 # API 数据分析与后端原理推断
+│   ├── API_PARAMETERS.md               # ⭐ 全部接口加密参数逐字 + 截图功能映射
 │   ├── stockhunter_extract_strings.py   # dex 字符串提取脚本
 │   ├── stockhunter_dex_strings.txt       # 提取出的全部 API 字符串
 │   └── stockhunter_test_screener.py      # 实测复现脚本
