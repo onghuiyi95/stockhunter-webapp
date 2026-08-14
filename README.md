@@ -20,7 +20,8 @@
 - [8. WebApp 使用](#8-webapp-使用)
 - [9. 部署 (CORS 代理)](#9-部署-cors-代理)
 - [10. 验证结果](#10-验证结果)
-- [11. 文件结构](#11-文件结构)
+- [11. API 数据分析与后端原理](#11-api-数据分析与后端原理)
+- [12. 文件结构](#12-文件结构)
 
 ---
 
@@ -334,7 +335,18 @@ AES 加密与 APK 字节级一致（key=`Kls3@p#GI3ch!qEh`，CBC，IV=0，PKCS7�
 
 ---
 
-## 11. 文件结构
+## 11. API 数据分析与后端原理
+
+详细逆向分析见 **[API_ANALYSIS.md](API_ANALYSIS.md)**：
+
+- Screener 返回 **106 字段/股**（行情 + 基本面 + 技术 + 19种K线形态 + 牛熊阶段）
+- 当前**只有 `klsestock.com` 的 Screener 与 `stockhunter.my` 图表在用**；`freeinfo.my` 那组（行情/新闻/股息）服务端返回空
+- 后端推断：**PHP + MySQL**，每日批处理预计算指标 → Screener 是预计算宽表的 SQL 过滤；图表是服务端预渲染 HTML（内联数据数组）
+- 加密仅为提高抓取门槛（key 硬编码公开）
+
+---
+
+## 12. 文件结构
 
 ```
 stockhunter-webapp/
@@ -347,6 +359,7 @@ stockhunter-webapp/
 │   └── templates/index.html      # Flask 前端
 ├── reverse_engineering/
 │   ├── STOCKHUNTER_REVERSE_REPORT.md   # 详细逆向报告
+│   ├── API_ANALYSIS.md                 # ⭐ API 数据分析与后端原理推断
 │   ├── stockhunter_extract_strings.py   # dex 字符串提取脚本
 │   ├── stockhunter_dex_strings.txt       # 提取出的全部 API 字符串
 │   └── stockhunter_test_screener.py      # 实测复现脚本
