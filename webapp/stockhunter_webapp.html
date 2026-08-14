@@ -205,7 +205,7 @@ function aesEncrypt(plain){
   const ct = CryptoJS.AES.encrypt(pt, KEY, {iv:IVZ, mode:CryptoJS.mode.CBC, padding:CryptoJS.pad.Pkcs7});
   return ct.toString(); // Base64 (crypto-js 默认输出即 Base64)
 }
-function today(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function today(){ const d=new Date(); d.setDate(d.getDate()+1); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 function shUrl(base, params, enc=true){
   const hash = enc ? aesEncrypt(params) : params;
   return base + "?" + (enc?"hash="+encodeURIComponent(hash)+"&os=and":"id="+hash);
@@ -347,7 +347,7 @@ async function loadNews(){ const k=document.getElementById('news-kind').value, s
     const p = `StkCode=${s}&PostId=&Cat=&Lang=1${k==='social'?'':'&keywId='+ (s?CUR.stockcode:'')}&req_date=${today()}`;
     const data=await getJSON(shUrl(base,p,true));
     const rv = data && data.result_value;
-    if(!rv){ el.className=''; el.innerHTML=`<div class="note">⚠️ 服务端返回: ${data&&data.err_msg?data.err_msg:'无数据'}（news/社交接口现需 App 登录 AccessToken，游客身份被拒）</div>`; return; }
+    if(!rv){ el.className=''; el.innerHTML=`<div class="note">⚠️ 服务端返回: ${data&&data.err_msg?data.err_msg:'无数据'}（freeinfo.my 的 news/社交接口现校验游客 access_token；该 token 由 App 注册时获取并缓存，纯网页游客态被拒。待抓包补全）</div>`; return; }
     let h=''; rv.slice(0,40).forEach(n=>{ h+=`<div class="card"><b>${n.title||n.headline||'(无标题)'}</b><br><small>${n.date||n.time||''} · ${n.source||''}</small><br>${n.summary||n.desc||''}</div>`; });
     el.className=''; el.innerHTML=h||'(无结果)';
   }catch(e){ el.textContent='错误: '+e; }
