@@ -30,6 +30,10 @@
   .stat .n{font-size:22px;font-weight:800}
   iframe{border:1px solid #ddd;width:100%;height:520px;background:#fff}
   .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .note{color:#b8860b;font-size:12px;margin-top:8px;background:#fff8e1;padding:6px 8px;border-radius:4px;border:1px solid #ffe0b2}
+  .filters fieldset{border:1px solid #d0d7de;border-radius:6px;margin-bottom:10px}
+  .filters legend{font-weight:700;color:#0e6e7d;padding:0 6px}
+  .filters label{display:inline-block;margin:3px 8px 3px 0;font-size:13px}
 </style>
 </head>
 <body>
@@ -204,7 +208,7 @@ function aesEncrypt(plain){
 function today(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 function shUrl(base, params, enc=true){
   const hash = enc ? aesEncrypt(params) : params;
-  return base + "?" + (enc?"hash="+encodeURIComponent(hash)+"&os=and":"id="+hash);
+  return base + "?" + (enc?"hash="+hash+"&os=and":"id="+hash);
 }
 async function getJSON(targetUrl){
   const r = await fetch(PROXY + encodeURIComponent(targetUrl), {headers:{"User-Agent":"Mozilla/5.0","Origin":ORIGIN}});
@@ -242,49 +246,62 @@ tabs.forEach(([id,label],i)=>{
 });
 document.getElementById('p-stock').classList.add('active');
 
-// ===== 个股 =====
-let CUR={};
+// ===== 个股 (数据源: screener 宽表, 因 curresult/dividend/prospect 已停) =====
+let CUR={}; let SCREENER_ALL=[];
 async function loadStock(){
   const code=document.getElementById('stock-code').value.trim();
   const el=document.getElementById('stock-body'); el.className='loading'; el.textContent='加载中…';
   try{
-    const u=shUrl("http://freeinfo.my/api/klse/getcurresult_v1.php","req_date="+today());
-    const d=await getJSON(u); const r=arr(d)[0]||{}; CUR=r;
-    document.getElementById('stock-name').textContent=r.stockname||code;
+    if(SCREENER_ALL.length===0){
+      const p="id=20&bo=&yh=&tp=&gw=&nc=&iw=&tr=&hl=&er=&type=&trend=&day=&sector=&pri_mi=&pri_mx=&pe=&pm=&ev=&dc=&cr=&ey=&roe=&dy=&pob=&evalue_ab=&m_cap_min=&m_cap_max=&t_share_min=&t_share_max=&ma1=&ma_c1=&ma2=&ma_c2=&ma3=&macd=&macd_day=&rsi_c=&rsi_v=&obv=&bb=&bb_day=&turn_ov_min=&turn_ov_max=&hammer=&harami=&haramicross=&engulfing=&piercing=&dojistar=&dragonflydoji=&marubozu=&invertedhammer=&takuri=&morningstar=&morningdojistar=&tristar=&kicking=&tasukigap=&abandonbaby=&threelinestrike=&threeoutside=&threewhitesoldiers=&ver=3.7.1&sn=own";
+      const u="http://www.klsestock.com/json_filter_v1.php?hash="+aesEncrypt(p)+"&os=and";
+      SCREENER_ALL=await getJSON(u);
+    }
+    const r=(SCREENER_ALL.find(x=>String(x.stockcode).trim()===code))||{};
+    CUR=r; CUR.stockcode=code;
+    document.getElementById('stock-name').textContent=(r.stockname||code)+(r.price?(" · "+r.price):"");
     el.className=''; el.innerHTML=`<div class="card">
-      <b>现价</b> ${r.price||r.pri_now||'-'} <span>${pct(r.pri_chg)} ${r.pri_chg_pcn||''}%</span><br>
-      Bid/Ask: ${r.pri_bid||'-'} / ${r.pri_ask||'-'} · 量: ${r.volumn||r.vol_now||'-'}<br>
-      年高/低: ${r.pri_year_high||'-'} / ${r.pri_year_low||'-'} · 200/20ma: ${r.pri_ma200||'-'} / ${r.pri_ma20||'-'}
+      <b>现价</b> ${r.price||'-'} <span>${r.pri_chg||''} ${r.pri_chg_pcn||''}</span><br>
+      Bid/Ask: ${r.pri_bid||'-'} / ${r.pri_ask||'-'} · 量: ${r.volumn||'-'}<br>
+      年高/低: ${r.pri_year_high||r.pri_dy_high||'-'} / ${r.pri_year_low||r.pri_dy_low||'-'} · 200/20ma: ${r.pri_ma200||'-'} / ${r.pri_ma20||'-'}
     </div>`;
   }catch(e){ el.textContent='错误: '+e; }
 }
-async function loadFundamental(){ const el=document.getElementById('stock-body'); el.className='loading'; el.textContent='加载中…';
-  try{ const u=shUrl("http://freeinfo.my/api/klse/getklsediv_bycode_v1.php","StkCode="+CUR.stockcode); const d=await getJSON(u);
-    el.className=''; el.innerHTML=`<div class="card"><b>FUNDAMENTAL</b><br>PE: ${CUR.pe||'-'} · ROE: ${CUR.roe||'-'}% · EV/EBIT: ${CUR.EV_EBIT||'-'} · 股息率: ${CUR.dy||'-'}%<br>市净率: ${CUR.pri_of_book||'-'} · 流动比: ${CUR.current_ratio||'-'} · 净现金: ${CUR.net_cash||'-'} · 债务现金比: ${CUR.debt_cash||'-'}<br>股息(DPS): ${CUR.dps||'-'} · NTA: ${CUR.nta||'-'} · 市值: ${CUR.market_cap||'-'}</div>`+(d.result_value?('<div class="card">'+JSON.stringify(d.result_value).slice(0,300)+'</div>'):'');
-  }catch(e){ el.textContent='错误: '+e; }
+async function loadFundamental(){ const el=document.getElementById('stock-body');
+  if(!CUR.stockcode){ el.textContent='先查询个股'; return; }
+  el.className=''; el.innerHTML=`<div class="card"><b>FUNDAMENTAL</b> ${CUR.stockname||''} (${CUR.stockcode})<br>
+    PE: ${CUR.pe||'-'} · ROE: ${CUR.roe||'-'}% · EV/EBIT: ${CUR.EV_EBIT||'-'} · 股息率: ${CUR.dy||'-'}%<br>
+    市净率: ${CUR.pri_of_book||'-'} · 流动比: ${CUR.current_ratio||'-'} · 净现金: ${CUR.net_cash||'-'} · 债务现金比: ${CUR.debt_cash||'-'}<br>
+    市值: ${CUR.market_cap||'-'} · 营收增长: ${CUR.profit_margin||'-'}% · 盈利收益率: ${CUR.earning_yield||'-'}%</div>
+    <div class="note">⚠️ 数据来自 screener 日级预计算宽表（getcurresult/dividend 端点已停服）</div>`;
 }
-async function loadTechnical(){ const el=document.getElementById('stock-body'); el.className='';
-  el.innerHTML=`<div class="card"><b>TECHNICAL</b><br>MACD: ${CUR.macd||'-'} (signal ${CUR.macd_signal||'-'}) · RSI: ${CUR.rsi||'-'} · OBV: ${CUR.obv||'-'} ${CUR.obv_sid||''}<br>布林带: ${CUR.pri_bb_up||'-'}~${CUR.pri_bb_down||'-'} · 金叉: ${CUR.ema_golden_cross||'-'} · 动量: ${CUR.mom_strength||'-'}<br>形态: ${CUR.candle_desc||'-'}</div>`;
+async function loadTechnical(){ const el=document.getElementById('stock-body');
+  if(!CUR.stockcode){ el.textContent='先查询个股'; return; }
+  el.innerHTML=`<div class="card"><b>TECHNICAL</b><br>MACD: ${CUR.macd||'-'} (signal ${CUR.macd_signal||'-'}) · RSI: ${CUR.rsi||'-'} · OBV: ${CUR.obv||'-'} ${CUR.obv_sid||''}<br>
+    布林带: ${CUR.pri_bb_up||'-'}~${CUR.pri_bb_down||'-'} · 金叉: ${CUR.ema_golden_cross||'-'} · 动量: ${CUR.mom_strength||'-'}<br>
+    MA20/MA200: ${CUR.pri_ma20||'-'} / ${CUR.pri_ma200||'-'} · 形态: ${CUR.candle_desc||'-'}</div>`;
 }
-async function loadQResult(){ const el=document.getElementById('stock-body'); el.className='loading'; el.textContent='加载中…';
+async function loadQResult(){ const el=document.getElementById('stock-body');
+  if(!CUR.stockcode){ el.textContent='先查询个股'; return; }
+  el.className='loading'; el.textContent='加载中…';
   try{ const u=shUrl("http://www.freeinfo.my/api/klse/getklseprospect_bycode_v1.php","stk_code="+CUR.stockcode+"&q_year=&PostId=&KeywId=&req_date="+today()+"&os=and");
     const d=await getJSON(u); const r=arr(d)[0]||{};
-    el.className=''; el.innerHTML=`<div class="card"><b>Q-RESULT</b><br>${JSON.stringify(r).slice(0,400)}</div>`;
+    el.className=''; el.innerHTML=`<div class="card"><b>Q-RESULT</b> ${Object.keys(r).length?JSON.stringify(r).slice(0,500):'(该端点已停服，无数据)'}</div>`;
   }catch(e){ el.textContent='错误: '+e; }
 }
-async function loadDividend(){ const el=document.getElementById('stock-body'); el.className='loading'; el.textContent='加载中…';
-  try{ const u=shUrl("http://www.freeinfo.my/api/klse/getklsediv_bycode_v1.php","StkCode="+CUR.stockcode+"&req_date="+today());
-    const d=await getJSON(u); const rs=arr(d);
-    let h='<div class="card"><b>DIVIDEND</b><table><tr><th>FY</th><th>DPS</th><th>Ex</th><th>Pay</th><th>公告</th></tr>';
-    rs.slice(0,10).forEach(x=>h+=`<tr><td>${x.fy||x.financial_year||''}</td><td>${x.dps||x.dividend||''}</td><td>${x.ex_date||''}</td><td>${x.pay_date||''}</td><td>${x.announced||''}</td></tr>`);
-    h+='</table></div>'; el.className=''; el.innerHTML=h||'(无股息)';
-  }catch(e){ el.textContent='错误: '+e; }
+async function loadDividend(){ const el=document.getElementById('stock-body');
+  if(!CUR.stockcode){ el.textContent='先查询个股'; return; }
+  el.className=''; el.innerHTML=`<div class="card"><b>DIVIDEND</b><br>
+    股息率(DY): ${CUR.dy||'-'}% · 推测DPS参考: ${CUR.dps||'-'}<br>
+    <span class="note">⚠️ 完整股息历史端点 (getklsediv_bycode) 已停服，仅显示宽表 dy 字段</span></div>`;
 }
-async function loadWarrant(){ const el=document.getElementById('stock-body'); el.className='loading'; el.textContent='加载中…';
+async function loadWarrant(){ const el=document.getElementById('stock-body');
+  if(!CUR.stockcode){ el.textContent='先查询个股'; return; }
+  el.className='loading'; el.textContent='加载中…';
   try{ const u="http://www.klsestock.com/json_cache_v2.php?id=38&code="+CUR.stockcode; const d=await getJSON(u);
     let h='<div class="card"><b>WARRANT</b><table><tr><th>代码</th><th>名</th><th>价</th><th>涨跌%</th><th>量</th></tr>';
     arr(d).slice(0,30).forEach(w=>h+=`<tr><td>${w.code||w.stk_code||''}</td><td>${w.name||w.stockname||''}</td><td>${w.price||w.pri_now||''}</td><td>${pct(w.chg_pct)}</td><td>${w.volume||''}</td></tr>`);
-    h+='</table></div>'; el.className=''; el.innerHTML=h||'(无权证)';
+    h+='</table></div>'; el.className=''; el.innerHTML=h||'(无权证/端点已停)';
   }catch(e){ el.textContent='错误: '+e; }
 }
 async function loadStockNews(){ const el=document.getElementById('stock-body'); el.className='loading'; el.textContent='加载中…';
@@ -350,7 +367,7 @@ async function loadScreener(){
   const caOpts=['hammer','harami','haramicross','engulfing','piercing','dojistar','dragonflydoji','marubozu','invertedhammer','takuri','morningstar','morningdojistar','tristar','kicking','tasukigap','abandonbaby','threelinestrike','threeoutside','threewhitesoldiers'];
   const ca=caOpts.map(c=>`${c}=${g('f-ca-'+c)}`).join('&');
   const p=`id=20&${sa}&${sa2}&${fa}&${ta}&${ca}&ver=3.7.1&sn=own`;
-  try{ const u="http://www.klsestock.com/json_filter_v1.php?"+encodeURIComponent("hash="+aesEncrypt(p))+"&os=and";
+  try{ const u="http://www.klsestock.com/json_filter_v1.php?hash="+aesEncrypt(p)+"&os=and";
     const d=await getJSON(u); let h='<table><tr><th>代码</th><th>名</th><th>价</th><th>PE</th><th>ROE</th><th>DY</th><th>MACD</th><th>RSI</th></tr>';
     arr(d).slice(0,80).forEach(r=>{ h+=`<tr><td>${r.stockcode||''}</td><td>${r.stockname||''}</td><td>${r.price||''}</td><td>${r.pe||''}</td><td>${r.roe||''}</td><td>${r.dy||''}</td><td>${r.macd||''}</td><td>${r.rsi||''}</td></tr>`; });
     h+='</table>'; el.className=''; el.innerHTML=h||'(无结果)';
@@ -363,7 +380,7 @@ async function loadChart(){ const t=document.getElementById('chart-type').value,
   if(t==='adam'){ base="http://www.stockhunter.my/api/klse/get_chart_adam.php"; params="StkCode="+code+"&req_date="+today(); }
   else if(t==='mom'){ base="http://www.stockhunter.my/api/klse/get_chart_mom_subsector.php"; params="req_date="+today(); }
   else { base="http://www.freeinfo.my/api/klse/get_chart_happypanic.php"; params="req_date="+today(); }
-  const target=base+"?"+(enc?("hash="+encodeURIComponent(aesEncrypt(params))+"&os=and"):params);
+  const target=base+"?"+(enc?("hash="+aesEncrypt(params)+"&os=and"):params);
   document.getElementById('chart-iframe').src=PROXY+encodeURIComponent(target);
 }
 </script>

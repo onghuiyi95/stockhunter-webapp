@@ -4,17 +4,38 @@
 > **1) API 返回了什么数据？ 2) 背后怎么运作的？ 3) 用什么数据库？**
 >
 > 基于 dex 反编译 + 实机抓包 + 真实返回结构分析。推断部分标注 ⚠️。
+>
+> ⚠️ **重要实测更正（2026-08-14）**：经代理实测，原以为可用的多类端点现已**停服（返回空 body）**，唯独 **screener 宽表** 与 **新闻/社媒/指数/热门/图表** 仍活。下文已据实测标注存活状态。
+
+---
+
+## 〇、端点存活状态（实测，2026-08-14）
+
+| 端点 | 实测结果 | 状态 |
+|---|---|---|
+| `klsestock.com/json_filter_v1.php` (screener) | 1096条×106字段 秒回 | ✅ **活（核心数据源）** |
+| `freeinfo.my/.../getklsenews_bycode_v2.php` | 真实新闻流 | ✅ 活 |
+| `freeinfo.my/.../getklse_social_v1.php` | 社媒源+计数 | ✅ 活 |
+| `freeinfo.my/.../getklse_hotstk_v1.php` | 热门列表 | ✅ 活 |
+| `freeinfo.my/.../getklse_index_v1.php` | 指数/期货骨架 | ✅ 活 |
+| `stockhunter.my/.../get_chart_adam.php` 等 | 图表 HTML | ✅ 活 |
+| `freeinfo.my/.../getcurresult_v1.php` | `{"result_value":[]}` 空数组 | ❌ **停（无数据）** |
+| `freeinfo.my/.../getklsediv_bycode_v1.php` | 空 body | ❌ **停** |
+| `freeinfo.my/.../getklseprospect_bycode_v1.php` | 空 body | ❌ **停** |
+| `klsegroup.com/json_cache_v1.php` 等 | HTTP 530 | ❌ **停** |
+| `klsestock.com/json_cache_v1/v2.php?id=N` | 空 body / `{"OS":"NA"}` | ❌ **停（编号体系失效）** |
+
+**推论**：App 当前个股 FUNDAMENTAL/TECHNICAL 真实数据，只能从 **screener 宽表** 取（含 pe/roe/dy/macd/rsi/ma20/ma200 全字段，已实证 1155/6012 有值）。已停的 curresult/dividend/prospect 端点不再可用。
 
 ---
 
 ## 一、API 返回了什么数据（按业务分层的真实证据）
 
-### 1.1 行情类 — `getcurresult_v1`
-返回单只/批量股票的实时报价快照：
-`price / pri_open / pri_prv_close / pri_chg / pri_chg_pcn / volumn / turnover_amt / total_share / market_cap / sikl_main_sector / scid / is_w / is_top_cap`
+### 1.1 行情快照 — `getcurresult_v1`（⚠️ 已停）
+dex 显示字段：`price / pri_open / pri_prv_close / pri_chg / pri_chg_pcn / volumn / turnover_amt / total_share / market_cap / sikl_main_sector / scid / is_w / is_top_cap`。但**实测返回空数组**，该端点数据已下线。当前行情快照需改从 screener 宽表取。
 
-### 1.2 选股类 — `json_filter_v1.php` (screener)
-**106 字段/股**，分 5 维（实测 AHB/7315 样本）：
+### 1.2 选股类 — `json_filter_v1.php` (screener) ✅ 活
+**106 字段/股**，分 5 维（实测 1155/6012/AHB/7315 样本）：
 - 行情：price/pri_open/pri_prv_close/volumn/turnover_amt/market_cap/sector
 - 基本面：pe/roe/profit_margin/ev/EV_EBIT/earning_yield/dy/debt_cash/current_ratio/pri_of_book/net_cash/pn17
 - 技术：pri_ma10~200 / ema10~60 / ema_golden_cross / macd_line/signal/daycount / rsi / obv/obv20/obv_sid / pri_bb*/market_s/ mom_status/mom_strength
