@@ -214,6 +214,16 @@ async function getJSON(targetUrl){
   const r = await fetch(PROXY + encodeURIComponent(targetUrl), {headers:{"User-Agent":"Mozilla/5.0","Origin":ORIGIN}});
   return await r.json();
 }
+// POST 接口 (prospect/dividend/warrant 用 Volley getParams -> body hash+os)
+async function postJSON(base, params){
+  const body = "hash="+encodeURIComponent(aesEncrypt(params))+"&os=and";
+  const r = await fetch(PROXY + encodeURIComponent(base), {
+    method:"POST",
+    headers:{"User-Agent":"Mozilla/5.0","Origin":ORIGIN,"Content-Type":"application/x-www-form-urlencoded"},
+    body: body
+  });
+  return await r.json();
+}
 const pct = v => v==null?'':(v>0?'<span class="up">+'+v+'</span>':'<span class="down">'+v+'</span>');
 const arr = d => Array.isArray(d)?d : (d&&d.result_value)?d.result_value : (d&&Array.isArray(d.data)?d.data:[]);
 
@@ -284,29 +294,38 @@ async function loadTechnical(){ const el=document.getElementById('stock-body');
 async function loadQResult(){ const el=document.getElementById('stock-body');
   if(!CUR.stockcode){ el.textContent='先查询个股'; return; }
   el.className='loading'; el.textContent='加载中…';
-  try{ const u=shUrl("http://www.freeinfo.my/api/klse/getklse_prospect_v1.php","stk_code="+CUR.stockcode+"&q_year=&PostId=&KeywId=&req_date="+today());
-    const d=await getJSON(u); const rv=d&&d.result_value;
+  try{ const d=await postJSON("http://www.freeinfo.my/api/klse/getklseprospect_bycode_v1.php","stk_code="+CUR.stockcode+"&q_year="+new Date().getFullYear()+"&PostId=&KeywId=&req_date="+today());
+    const rv=d&&d.result_value;
     if(!rv||!rv.length){ el.className='';
       const snap=`季度: ${CUR.qm||'-'} · 环比(QoQ): ${CUR.qtoq||'-'} · 利润率: ${CUR.profit_margin||'-'}% · 营收增长: ${CUR.toprev||'-'} · 盈利增长: ${CUR.topprofit||'-'}`;
-      el.innerHTML=`<div class="card"><b>Q-RESULT</b><br>${snap}<br><span class="note">⚠️ 完整季报历史序列端点 (getklseprospect) 服务端现返回「No data」，仅宽表单季快照可用</span></div>`; return; }
+      el.innerHTML=`<div class="card"><b>Q-RESULT</b><br>${snap}<br><span class="note">⚠️ 季报历史序列需 POST 接口，当前代理可能不支持 POST（显示宽表单季快照兜底）</span></div>`; return; }
     const r=rv[0];
     el.className=''; el.innerHTML=`<div class="card"><b>Q-RESULT</b> ${JSON.stringify(r).slice(0,500)}</div>`;
   }catch(e){ el.textContent='错误: '+e; }
 }
 async function loadDividend(){ const el=document.getElementById('stock-body');
   if(!CUR.stockcode){ el.textContent='先查询个股'; return; }
-  el.className=''; el.innerHTML=`<div class="card"><b>DIVIDEND</b><br>
+  el.className='loading'; el.textContent='加载中…';
+  try{ const d=await postJSON("http://www.freeinfo.my/api/klse/getklsediv_bycode_v1.php","StkCode="+CUR.stockcode+"&req_date="+today());
+    const rv=d&&d.result_value;
+    if(!rv||!rv.length){ el.className=''; el.innerHTML=`<div class="card"><b>DIVIDEND</b><br>
     股息率(DY): ${CUR.dy||'-'}% · 推测DPS参考: ${CUR.dps||'-'}<br>
-    <span class="note">⚠️ 完整股息历史端点 (getklsediv_bycode) 已停服，仅显示宽表 dy 字段</span></div>`;
+    <span class="note">⚠️ 股息历史端点 (getklsediv_bycode) 为 POST 接口，当前代理可能不支持 POST（仅显示宽表 dy 字段）</span></div>`; return; }
+    let h=`<div class="card"><b>DIVIDEND</b></div><table><tr><th>FY</th><th>DPS</th><th>Ex</th><th>Pay</th><th>Announced</th></tr>`;
+    rv.slice(0,10).forEach(x=>{ h+=`<tr><td>${x.fy||x.year||''}</td><td>${x.dps||x.amount||''}</td><td>${x.ex_date||''}</td><td>${x.pay_date||''}</td><td>${x.announced||''}</td></tr>`; });
+    el.className=''; el.innerHTML=h+'</table>';
+  }catch(e){ el.className=''; el.innerHTML=`<div class="card"><b>DIVIDEND</b><br>股息率(DY): ${CUR.dy||'-'}%<br><span class="note">⚠️ POST 接口代理限制，仅宽表 dy 兜底</span></div>`; }
 }
 async function loadWarrant(){ const el=document.getElementById('stock-body');
   if(!CUR.stockcode){ el.textContent='先查询个股'; return; }
   el.className='loading'; el.textContent='加载中…';
-  try{ const u="http://www.klsestock.com/json_cache_v2.php?id=38&code="+CUR.stockcode; const d=await getJSON(u);
+  try{ const d=await postJSON("http://www.klsestock.com/json_cache_v2.php","id=38&code="+CUR.stockcode+"&ver=3.7.1&sn=own");
+    const rv=d&&d.result_value;
+    if(!rv||!rv.length){ el.className=''; el.innerHTML='<div class="card"><b>WARRANT</b><br><span class="note">⚠️ 权证端点 (json_cache_v2 id=38) 为 POST 接口，代理限制或已停服</span></div>'; return; }
     let h='<div class="card"><b>WARRANT</b><table><tr><th>代码</th><th>名</th><th>价</th><th>涨跌%</th><th>量</th></tr>';
-    arr(d).slice(0,30).forEach(w=>h+=`<tr><td>${w.code||w.stk_code||''}</td><td>${w.name||w.stockname||''}</td><td>${w.price||w.pri_now||''}</td><td>${pct(w.chg_pct)}</td><td>${w.volume||''}</td></tr>`);
-    h+='</table></div>'; el.className=''; el.innerHTML=h||'(无权证/端点已停)';
-  }catch(e){ el.textContent='错误: '+e; }
+    rv.slice(0,30).forEach(w=>h+=`<tr><td>${w.code||w.stk_code||''}</td><td>${w.name||w.stockname||''}</td><td>${w.price||w.pri_now||''}</td><td>${pct(w.chg_pct)}</td><td>${w.volume||''}</td></tr>`);
+    el.className=''; el.innerHTML=h+'</table></div>';
+  }catch(e){ el.className=''; el.innerHTML='<div class="card"><b>WARRANT</b><br><span class="note">⚠️ POST 接口代理限制</span></div>'; }
 }
 async function loadStockNews(){ const el=document.getElementById('stock-body'); el.className='loading'; el.textContent='加载中…';
   try{ const u=shUrl("http://www.freeinfo.my/api/klse/getklsenews_bycode_v2.php","StkCode="+CUR.stockcode+"&PostId=&Cat=&Lang=1&keywId="+CUR.stockcode+"&req_date="+today());
