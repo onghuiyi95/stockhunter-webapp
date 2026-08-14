@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StockHunter WebApp — 功能清单 (还原进度)</title>
+<style>
+  body{font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:1000px;margin:20px auto;padding:0 16px;color:#222;background:#f5f6f8}
+  h1{color:#0e6e7d;border-bottom:3px solid #0e6e7d;padding-bottom:8px}
+  h2{color:#0e6e7d;margin-top:30px}
+  table{width:100%;border-collapse:collapse;margin:10px 0;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+  th,td{border:1px solid #ddd;padding:8px 10px;text-align:left;font-size:13px;vertical-align:top}
+  th{background:#0e6e7d;color:#fff}
+  tr:nth-child(even){background:#f9fafb}
+  .done{background:#e6f7ed;color:#1a7f4b;font-weight:700;padding:2px 8px;border-radius:10px;font-size:12px}
+  .partial{background:#fff4e0;color:#a86a00;font-weight:700;padding:2px 8px;border-radius:10px;font-size:12px}
+  .todo{background:#fdeaea;color:#c0392b;font-weight:700;padding:2px 8px;border-radius:10px;font-size:12px}
+  code{background:#eef;padding:1px 4px;border-radius:3px;font-size:12px}
+  .summary{display:flex;gap:12px;margin:16px 0}
+  .card{flex:1;background:#fff;padding:14px;border-radius:8px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+  .card .n{font-size:28px;font-weight:800;color:#0e6e7d}
+  .note{background:#eaf4f6;border-left:4px solid #0e6e7d;padding:10px 14px;margin:12px 0;font-size:13px}
+</style>
+</head>
+<body>
+<h1>📋 StockHunter Malaysia — WebApp 功能清单 & 还原进度</h1>
+<p>逆向来源：<code>StockHunter Malaysia 3.7.1</code> APK（jadx 反编译 + 实机截图核对）。加密：Screener 系列用 AES-256-CBC；<code>json_cache_*</code> 系列明文无加密。</p>
+
+<div class="summary">
+  <div class="card"><div class="n">20</div>App 功能模块</div>
+  <div class="card"><div class="n">17</div>已逆向接口</div>
+  <div class="card"><div class="n">7</div>实测通数据</div>
+  <div class="card"><div class="n">100%</div>接口已解密</div>
+</div>
+
+<h2>一、个股详情页 (Stock Info)</h2>
+<table>
+<tr><th>功能</th><th>App 证据</th><th>接口</th><th>状态</th></tr>
+<tr><td>报价/涨跌/Bid-Ask/年高年低/MA/量</td><td>MAXIS 截图</td><td><code>getcurresult_v1</code>（或个股详情）</td><td><span class="partial">PARTIAL</span></td></tr>
+<tr><td>WARRANT 列表</td><td>WARRANT 标签</td><td><code>json_cache_v2.php?id=38&code=&lt;code&gt;</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>FUNDAMENTAL (PE/ROE/EV/股息/NTA)</td><td>MAXIS FUNDAMENTAL 截图</td><td>screener 106字段 / <code>json_cache?id=35</code>(Policy) <code>id=19</code>(Yield)</td><td><span class="done">DONE</span></td></tr>
+<tr><td>TECHNICAL (MACD/RSI/OBV/BB)</td><td>MAXIS TECHNICAL 截图</td><td>screener 106字段</td><td><span class="done">DONE</span></td></tr>
+<tr><td>Q-RESULT (净利柱+利润率线)</td><td>MAXIS Q-RESULT 截图</td><td><code>getklseprospect_bycode_v1</code></td><td><span class="partial">PARTIAL</span></td></tr>
+<tr><td>NOTES (笔记)</td><td>ADD NOTE 按钮</td><td>本地存储（无API）</td><td><span class="done">DONE</span></td></tr>
+<tr><td>NEWS / DIVIDEND</td><td>MAXIS 股息4条</td><td><code>getklsediv_bycode_v1</code> / <code>getklsenews_bycode_v2</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>CHART (ADAM)</td><td>图表页</td><td><code>get_chart_adam.php</code></td><td><span class="done">DONE</span></td></tr>
+</table>
+
+<h2>二、市场 (Market)</h2>
+<table>
+<tr><th>功能</th><th>接口</th><th>状态</th></tr>
+<tr><td>Overview (涨跌家数/星级分布)</td><td><code>json_cache_v1.php?id=1</code> / <code>get_chart_happypanic</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>Indices (恒生/CSI300/STI…)</td><td><code>getklse_index_v1?region=ASIA/WORLD</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>Top Volume</td><td><code>json_cache_v2.php?id=26/27</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>Top Gainer / Loser</td><td><code>json_cache_v2.php?id=28/29</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>Malaysia 概览</td><td><code>json_cache_v1.php?id=1</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>KLCI30 / MarketCap Top35</td><td><code>json_cache_v1.php?id=...</code></td><td><span class="todo">TODO</span></td></tr>
+</table>
+
+<h2>三、Hot Stock (热门)</h2>
+<table>
+<tr><th>周期</th><th>接口</th><th>状态</th></tr>
+<tr><td>DAY</td><td><code>getklse_hotstk_v1?day=1&Lang=1</code> / <code>json_cache_v2?id=3</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>WEEK</td><td><code>getklse_hotstk_v1?day=7</code> / <code>json_cache_v1?id=9</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>MONTH</td><td><code>getklse_hotstk_v1?day=30</code> / <code>json_cache_v1?id=10</code></td><td><span class="done">DONE</span></td></tr>
+</table>
+
+<h2>四、Hunt 选股 (SA / FA / TA / CA)</h2>
+<table>
+<tr><th>维度</th><th>接口</th><th>状态</th></tr>
+<tr><td>SA (信号: Breakout/YearHigh/TopProfit/NetCash…)</td><td rowspan="4"><code>json_filter_v1.php</code> (AES加密)</td><td><span class="done">DONE</span></td></tr>
+<tr><td>FA (PE/ROE/EV/股息/市值…)</td><td><span class="done">DONE</span></td></tr>
+<tr><td>TA (MACD/RSI/OBV/布林…)</td><td><span class="done">DONE</span></td></tr>
+<tr><td>CA (19种K线形态)</td><td><span class="done">DONE</span></td></tr>
+<tr><td>Warrant Discount/Volume/Turnover</td><td><code>json_cache_v2?id=39/40/41</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>Growth (ConQ/QoQ/YoY)</td><td><code>json_cache_v1?id=11/12/13</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>Trend (星级)</td><td><code>json_cache_v1?id=6&trend=2..5</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>Report (季报)</td><td><code>json_cache_v1?id=16&type=1/2/3</code> / <code>id=37</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>Top Profit / Revenue / NetCash</td><td><code>json_cache_v1?id=17/43/18</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>Momentum (GapUp/TurnOver)</td><td><code>json_cache_v2?id=31/32</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>Sector 列表/详情</td><td><code>json_cache_v2?id=33</code> / <code>id=34&sector=</code></td><td><span class="done">DONE</span></td></tr>
+</table>
+
+<h2>五、News (新闻)</h2>
+<table>
+<tr><th>功能</th><th>接口</th><th>状态</th></tr>
+<tr><td>Economic (LOCAL/WORLD/SOCIAL/TOPIC)</td><td><code>getklsenews_bycode_v2</code> / <code>getklse_topic_v1</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>Social (社媒讨论)</td><td><code>getklse_social_v1</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>个股 News</td><td><code>getklsenews_bycode_v2?StkCode=&keywId=</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>Stock Chat</td><td><code>getklse_stkchat_v1</code></td><td><span class="todo">TODO</span></td></tr>
+</table>
+
+<h2>六、其它</h2>
+<table>
+<tr><th>功能</th><th>接口</th><th>状态</th></tr>
+<tr><td>Watchlist (自选)</td><td><code>json_cache_v1?id=2&code=</code> / <code>get_goldplus_watchlist_v1</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>Chart Momentum / Happy-Panic</td><td><code>get_chart_mom_subsector</code> / <code>get_chart_happypanic</code></td><td><span class="done">DONE</span></td></tr>
+<tr><td>AI-ADAM</td><td><code>klsechart.my/ai/ai_adam.php?code=</code></td><td><span class="todo">TODO</span></td></tr>
+<tr><td>版本检查</td><td><code>check_app_ver.php</code></td><td><span class="done">DONE</span></td></tr>
+</table>
+
+<div class="note">
+<strong>图例：</strong>
+<span class="done">DONE</span> = 接口已解密且 WebApp 已实现或可直接调 ·
+<span class="partial">PARTIAL</span> = 接口已知但 WebApp 渲染待完善 ·
+<span class="todo">TODO</span> = 接口已定位，WebApp 尚未接入<br>
+<strong>实测已通数据：</strong> screener · news · social · hotstock · dividend · checkver · chart_adam（其余接口参数已解密，待部署实测）
+</div>
+
+<p style="text-align:center;color:#888;font-size:12px;margin-top:30px">逆向分析报告见 <code>API_PARAMETERS.md</code> / <code>API_ANALYSIS.md</code> · 主 WebApp 见 <code>webapp/stockhunter_webapp.html</code></p>
+</body>
+</html>
