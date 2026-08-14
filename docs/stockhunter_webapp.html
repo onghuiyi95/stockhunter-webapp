@@ -284,9 +284,13 @@ async function loadTechnical(){ const el=document.getElementById('stock-body');
 async function loadQResult(){ const el=document.getElementById('stock-body');
   if(!CUR.stockcode){ el.textContent='先查询个股'; return; }
   el.className='loading'; el.textContent='加载中…';
-  try{ const u=shUrl("http://www.freeinfo.my/api/klse/getklseprospect_bycode_v1.php","stk_code="+CUR.stockcode+"&q_year=&PostId=&KeywId=&req_date="+today()+"&os=and");
-    const d=await getJSON(u); const r=arr(d)[0]||{};
-    el.className=''; el.innerHTML=`<div class="card"><b>Q-RESULT</b> ${Object.keys(r).length?JSON.stringify(r).slice(0,500):'(该端点已停服，无数据)'}</div>`;
+  try{ const u=shUrl("http://www.freeinfo.my/api/klse/getklse_prospect_v1.php","stk_code="+CUR.stockcode+"&q_year=&PostId=&KeywId=&req_date="+today());
+    const d=await getJSON(u); const rv=d&&d.result_value;
+    if(!rv||!rv.length){ el.className='';
+      const snap=`季度: ${CUR.qm||'-'} · 环比(QoQ): ${CUR.qtoq||'-'} · 利润率: ${CUR.profit_margin||'-'}% · 营收增长: ${CUR.toprev||'-'} · 盈利增长: ${CUR.topprofit||'-'}`;
+      el.innerHTML=`<div class="card"><b>Q-RESULT</b><br>${snap}<br><span class="note">⚠️ 完整季报历史序列端点 (getklseprospect) 服务端现返回「No data」，仅宽表单季快照可用</span></div>`; return; }
+    const r=rv[0];
+    el.className=''; el.innerHTML=`<div class="card"><b>Q-RESULT</b> ${JSON.stringify(r).slice(0,500)}</div>`;
   }catch(e){ el.textContent='错误: '+e; }
 }
 async function loadDividend(){ const el=document.getElementById('stock-body');
