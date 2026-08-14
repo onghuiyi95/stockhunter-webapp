@@ -414,9 +414,11 @@ async function loadNews(){ const k=document.getElementById('news-kind').value, s
 }
 async function loadSocialSource(bid,name){ const el=document.getElementById('news-body'); el.className='loading'; el.textContent='加载 '+name+' 中…';
   try{
-    const d=await getJSONR(shUrl("http://www.freeinfo.my/api/klse/getklsenews_bycode_v2.php",`StkCode=&PostId=&Cat=s&Lang=1&BrandId=${bid}&req_date=${today()}`,true));
+    // i3investor(48) 是英文源, 需 Lang=2; 其他源 Lang=1
+    const lang = (bid==='48') ? '2' : '1';
+    const d=await getJSONR(shUrl("http://www.freeinfo.my/api/klse/getklsenews_bycode_v2.php",`StkCode=&PostId=&Cat=s&Lang=${lang}&BrandId=${bid}&req_date=${today()}`,true));
     const rv=d&&d.result_value;
-    if(!rv||!rv.length){ el.className=''; el.innerHTML=`<div class="note">⚠️ ${name} 当前服务端无文章（可能已下线或数据在 klsegroup.com 死域）</div>`; return; }
+    if(!rv||!rv.length){ el.className=''; el.innerHTML=`<div class="note">⚠️ ${name} 当前服务端无文章</div>`; return; }
     let h=`<div class="card"><b>${name}</b> · ${rv.length}篇</div>`;
     rv.slice(0,40).forEach(n=>{ h+=`<div class="card"><b>${n.title||n.headline||''}</b><br><small>${n.date||n.time||''} · ${n.source||''}</small><br>${n.summary||n.desc||''}</div>`; });
     el.className=''; el.innerHTML=h;
