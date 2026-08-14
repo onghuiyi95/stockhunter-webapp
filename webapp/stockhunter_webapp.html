@@ -255,7 +255,7 @@ async function loadStock(){
     if(SCREENER_ALL.length===0){
       const p="id=20&bo=&yh=&tp=&gw=&nc=&iw=&tr=&hl=&er=&type=&trend=&day=&sector=&pri_mi=&pri_mx=&pe=&pm=&ev=&dc=&cr=&ey=&roe=&dy=&pob=&evalue_ab=&m_cap_min=&m_cap_max=&t_share_min=&t_share_max=&ma1=&ma_c1=&ma2=&ma_c2=&ma3=&macd=&macd_day=&rsi_c=&rsi_v=&obv=&bb=&bb_day=&turn_ov_min=&turn_ov_max=&hammer=&harami=&haramicross=&engulfing=&piercing=&dojistar=&dragonflydoji=&marubozu=&invertedhammer=&takuri=&morningstar=&morningdojistar=&tristar=&kicking=&tasukigap=&abandonbaby=&threelinestrike=&threeoutside=&threewhitesoldiers=&ver=3.7.1&sn=own";
       const u="http://www.klsestock.com/json_filter_v1.php?hash="+encodeURIComponent(aesEncrypt(p))+"&os=and";
-      SCREENER_ALL=await getJSON(u);
+      SCREENER_ALL=arr(await getJSON(u));
     }
     const r=(SCREENER_ALL.find(x=>String(x.stockcode).trim()===code))||{};
     CUR=r; CUR.stockcode=code;
