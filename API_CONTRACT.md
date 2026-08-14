@@ -1,120 +1,141 @@
 # StockHunter API 合约（传什么 / 返什么）
 
-逆向来源：StockHunter Malaysia 3.7.1 APK（jadx）+ Python 直连实测。
-所有请求经 AES-256-CBC 加密：key=`Kls3@p#GI3ch!qEh`，iv=16×0x00，PKCS5Padding，Base64。
-服务端要求 `req_date` = **明天**（本机今天+1天），今天/过去均拒。
+逆向来源：StockHunter Malaysia 3.7.1 APK（jadx 反编译）+ Python 直连实测。
+**加密统一**：AES-256-CBC，key=`Kls3@p#GI3ch!qEh`，iv=16×0x00，PKCS5Padding，Base64。
+**`req_date` 必须传明天**（本机今天+1天），今天/过去均拒（news 报 Invalid access token、index 报 Invalid token）。
 
 ---
 
-## 一、GET 接口（参数拼进 URL `?hash=<AES>&os=and`）
+## 一、GET 接口（参数拼 URL `?hash=<AES>&os=and`）
 
 ### 1. news（个股/全局新闻）
-- **URL**: `http://www.freeinfo.my/api/klse/getklsenews_bycode_v2.php`
-- **传**: `StkCode=<代码|空>&PostId=&Cat=&Lang=1|2&keywId=<代码|空>&req_date=<明天>`
-- **返**: `{is_success:true, result_value:[{title, date, source, summary, ...}]}`（实测 10 条）
-- **实测**: ✅ 活
+- URL: `http://www.freeinfo.my/api/klse/getklsenews_bycode_v2.php`
+- 传: `StkCode=<空|代码>&PostId=&Cat=&Lang=1|2&keywId=<空|代码>&req_date=明天`
+- 返: `{is_success, result_value:[{title,date,source,summary}]}` ✅10条
 
-### 2. social（社媒讨论源）
-- **URL**: `http://freeinfo.my/api/klse/getklse_social_v1.php`
-- **传**: `StkCode=<空>&PostId=&Cat=&Lang=1&req_date=<明天>`
-- **返**: `{is_success, result_value:[{...}]}`（实测 5 条）
-- **实测**: ✅ 活
+### 2. social（社媒）
+- URL: `http://freeinfo.my/api/klse/getklse_social_v1.php`
+- 传: `StkCode=&PostId=&Cat=&Lang=1&req_date=明天`
+- 返: `{is_success, result_value:[]}` ✅5条
 
-### 3. hotstock（热门股票）
-- **URL**: `http://freeinfo.my/api/klse/getklse_hotstk_v1.php`
-- **传**: `day=1|7|30&Lang=1&req_date=<明天>`（day=1日/7周/30月）
-- **返**: **裸数组** `[{stk_code, stk_name, stk_desc_en, ...}]`（实测 3730 字节，LPI 等）
-- **实测**: ✅ 活（注意：返回不是 {is_success} 包装，是直接数组）
+### 3. hotstock（热门）
+- URL: `http://freeinfo.my/api/klse/getklse_hotstk_v1.php`
+- 传: `day=1|7|30&Lang=1&req_date=明天`
+- 返: **裸数组**[{stk_code,stk_name,...}] ✅3730字节
 
 ### 4. index（指数）
-- **URL**: `http://www.freeinfo.my/api/klse/getklse_index_v1.php`
-- **传**: `idx_type=index&region=ASIA|ASEAN|WORLD|MALAYSIA&location=&req_date=<明天>`
-- **返**: `{is_success, result_value:[{name, point, chg, chg_pct, ...}]}`（实测 4 条）
-- **实测**: ✅ 活（今天/过去日期返回 `Invalid token. Please correct your date and time`）
+- URL: `http://www.freeinfo.my/api/klse/getklse_index_v1.php`
+- 传: `idx_type=index&region=ASIA|ASEAN|WORLD|MALAYSIA&location=&req_date=明天`
+- 返: `{is_success, result_value:[{name,point,chg,chg_pct}]}` ✅4条
 
-### 5. screener（选股 / 个股详情宽表）
-- **URL**: `http://www.klsestock.com/json_filter_v1.php`
-- **传**: `id=20&<SA/FA/TA/CA 筛选条件>&ver=3.7.1&sn=own`
-  - SA: `bo/yh/tp/gw/nc/iw/tr/hl/er`（1/0 信号）
-  - FA: `pe/pm/ev/dc/cr/ey/roe/dy/pob/evalue_ab/m_cap(_min/_max)/t_share(_min/_max)`（带 </> 阈值留空=不限）
-  - TA: `ma1+ma_c1 / ma2+ma_c2 / ma3 / macd+macd_day / rsi_c+rsi_v / obv / bb+bb_day / turn_ov(_min/_max)`
-  - CA: 19 种 K 线形态 `hammer/harami/haramicross/engulfing/piercing/dojistar/dragonflydoji/marubozu/invertedhammer/takuri/morningstar/morningdojistar/tristar/kicking/tasukigap/abandonbaby/threelinestrike/threeoutside/threewhitesoldiers`
-- **返**: **裸数组** 1096 只 × 106 字段 `[{stockcode, stockname, price, pe, roe, dy, macd, rsi, pri_ma20, pri_ma200, qm, qtoq, profit_margin, ...}]`
-- **实测**: ✅ 活（2.2MB）。**个股详情数据全来自此表**（price/pe/roe/dy/macd/rsi/ma 等）
+### 5. screener（选股/个股宽表）
+- URL: `http://www.klsestock.com/json_filter_v1.php`
+- 传: `id=20&<SA/FA/TA/CA筛选>&ver=3.7.1&sn=own`
+- 返: **裸数组**1096只×106字段 ✅2.2MB
 
-### 6. curresult（实时报价——已空）
-- **URL**: `http://freeinfo.my/api/klse/getcurresult_v1.php`
-- **传**: `req_date=<明天>`
-- **返**: `{is_success:true, result_value:[]}`（活但 0 条，服务端无数据）
-- **实测**: ⚠️ 空（报价改从 screener 宽表 price 字段取）
+### 6. curresult（实时报价——空）
+- URL: `http://freeinfo.my/api/klse/getcurresult_v1.php`
+- 传: `req_date=明天`
+- 返: `{is_success, result_value:[]}` ⚠️0条（报价改从 screener.price）
 
 ---
 
-## 二、POST 接口（参数放 body `hash=<AES>&os=and`，Volley getParams）
+## 二、json_cache 系列（GET，AES 加密 `id=N` 放 hash）
 
-> ⚠️ 关键：这些接口**必须用 POST**，且 `hash` 在请求 body（不是 URL）。
-> 之前网页经 Cloudflare Worker 代理调 POST 返回空——是**代理不支持 POST 转发**，非接口停。
-> Python 直连 POST 实测全部通。
+> ⚠️ 关键：之前误用明文 `?id=N` 返 `{"OS":"NA"}`。正确是 **AES("id=N") 放 `?hash=`**。
+> base: `http://www.klsestock.com/json_cache_v1.php` 或 `json_cache_v2.php`
+> 构造: `?hash=<AES("id=N")>&os=and`
+
+| id | 文件 | 内容 | 返 |
+|---|---|---|---|
+| 1 | v1 | Overview 市场概览 | [{sector,s_up,s_down,s_npc,...}] ✅ |
+| 2 | v1 | Watchlist 自选（需登录） | ⚠️空 |
+| 6 | v1 | Trend 星级榜单 | [{tid,stockname,...}] ✅47万字节 |
+| 8 | v1 | StockInfo Technical 技术 | ⚠️空(raw[0]) |
+| 9 | v1 | HotList Week 周热门 | [{tid,...}] ✅ |
+| 10 | v1 | HotList Month 月热门 | ✅ |
+| 11 | v1 | Growth ConQ 连续季增 | ✅ |
+| 12 | v1 | Growth YoY | ✅ |
+| 13 | v1 | Growth QoQ | ✅ |
+| 16 | v1 | Report 季报报告 | ✅2.2MB |
+| 17 | v1 | TopProfit 最高盈利 | ✅ |
+| 18 | v1 | NetCash 净现金最高 | ✅ |
+| 19 | v1 | DividendYield 股息率 | ✅ |
+| 22 | v1 | Toploss 最大亏损 | ✅ |
+| 23 | v1 | Shariah 伊斯兰合规 | ✅ |
+| 3 | v2 | HotList 热门 | ✅ |
+| 26 | v2 | TopGainer 涨幅榜 | [{tid,stockname,stockcode,...}] ✅ |
+| 27 | v2 | TopLoser 跌幅榜 | ✅ |
+| 28 | v2 | TopGain% 涨幅% | ✅ |
+| 29 | v2 | TopLose% 跌幅% | ✅ |
+| 30 | v2 | Momentum VolumeUp 量增 | ✅ |
+| 31 | v2 | Momentum GapUp 跳空 | ✅ |
+| 32 | v2 | Momentum TurnOver 换手 | ✅ |
+| 33 | v2 | SectorList 板块列表 | [{sector,...}] ✅ |
+| 34 | v2 | SectorDetails 板块详情 | ✅2MB |
+| 35 | v2 | DividendPolicy 股息政策 | ⚠️空 |
+| 37 | v2 | LatestQ 最新季报 | ✅ |
+| 38 | v2 | Warrant 个股权证 | ⚠️`{sector:NA}`（数据源空，接口活）|
+| 39 | v2 | WarrantDiscount 折价权证 | [{code,pri_open,...}] ✅ |
+| 40 | v2 | WarrantTopVolume 高量权证 | ✅ |
+| 41 | v2 | WarrantHighTurnOver 高换权证 | ✅ |
+| 43 | v2 | TopRevenue 最高营收 | ✅ |
+
+---
+
+## 三、POST 接口（body 放 hash，Volley getParams）
 
 ### 7. DIVIDEND（股息）
-- **URL**: `http://www.freeinfo.my/api/klse/getklsediv_bycode_v1.php`
-- **方法**: POST
-- **传(body)**: `hash=<AES("StkCode=<代码>&req_date=<明天>")>&os=and`
-- **返**: `{is_success:true, result_value:[{id, r_date, f_year, ex_date, pay_date, en_date, en_type, div_cent, stk_list:[...]}]}`
-  - `en_type`: "First Interim Dividend" 等
-  - `div_cent`: 每股派息（分）
-  - `f_year`: 财政年 "2026-12-31"
-- **实测**: ✅ 直连 POST 活（MAXIS 返回 4 期股息）
+- URL: `http://www.freeinfo.my/api/klse/getklsediv_bycode_v1.php`
+- 方法: POST  body: `hash=<AES("StkCode=<代码>&req_date=明天")>&os=and`
+- 返: `{is_success, result_value:[{id,r_date,f_year,ex_date,pay_date,en_date,en_type,div_cent,stk_list}]}` ✅直连通
 
 ### 8. Q-RESULT（季报）
-- **URL**: `http://www.freeinfo.my/api/klse/getklseprospect_bycode_v1.php`
-- **方法**: POST
-- **传(body)**: `hash=<AES("stk_code=<代码>&q_year=<当年>&PostId=&KeywId=&req_date=<明天>")>&os=and`
-- **返**: `{is_success:false, result_value:"", err_msg:"No data found."}` 或成功时 `{result_value:[{desc, ...季报序列}]}`
-- **实测**: ⚠️ 接口活但**当前无数据**（返回 No data）——App 截图数据是历史缓存
+- URL: `http://www.freeinfo.my/api/klse/getklseprospect_bycode_v1.php`
+- 方法: POST  body: `hash=<AES("stk_code=<代码>&q_year=<当年>&PostId=&KeywId=&req_date=明天")>&os=and`
+- 返: `{is_success:false, err_msg:No data}` ⚠️接口活但当前无数据（App 缓存）
 
-### 9. WARRANT（权证）
-- **URL**: `http://www.klsestock.com/json_cache_v2.php`
-- **方法**: POST
-- **传(body)**: `hash=<AES("id=38&code=<代码>&ver=3.7.1&sn=own")>&os=and`
-- **返**: `{result_value:[{code, name, price, chg_pct, volume, ...}]}` 或空
-- **实测**: ⚠️ 直连 POST 返回空（该 id=38 数据源可能下线）
+### 9. prospect_v1（主题新闻用）
+- URL: `http://www.freeinfo.my/api/klse/getklse_prospect_v1.php`
+- 方法: POST  body: `hash=<AES("stk_code=<代码>&q_year=<当年>&PostId=&KeywId=&req_date=明天")>&os=and`
+- 返: `998 No data` ⚠️
 
 ---
 
-## 三、图表接口（GET，返回 HTML/JS 图表）
+## 四、图表接口（GET，返 HTML/JS 图表）
 
-### 10. ADAM 图表
-- **URL**: `http://www.stockhunter.my/api/klse/get_chart_adam.php`
-- **传**: `StkCode=<代码>&req_date=<明天>`
-
-### 11. Momentum 图表
-- **URL**: `http://www.stockhunter.my/api/klse/get_chart_mom_subsector.php`
-- **传**: `req_date=<明天>`
-
-### 12. Happy-Panic 图表
-- **URL**: `http://www.freeinfo.my/api/klse/get_chart_happypanic.php`
-- **传**: `req_date=<明天>`
+- ADAM: `http://www.stockhunter.my/api/klse/get_chart_adam.php?StkCode=<代码>&req_date=明天`
+- Momentum: `http://www.stockhunter.my/api/klse/get_chart_mom_subsector.php?req_date=明天`
+- HappyPanic: `http://www.freeinfo.my/api/klse/get_chart_happypanic.php?req_date=明天`
+- 互动图: `http://www.stockhunter.my/tv_v6/chart.php?...`
+- AI-ADAM: `http://klsechart.my/ai/ai_adam.php?...`
 
 ---
 
-## 四、总结
+## 五、其他（注册/版本）
 
-| 接口 | 方法 | 加密 | 实测 | 返回格式 |
-|---|---|---|---|---|
-| news | GET | URL hash | ✅ | {is_success, result_value[]} |
-| social | GET | URL hash | ✅ | {is_success, result_value[]} |
-| hotstock | GET | URL hash | ✅ | 裸数组[] |
-| index | GET | URL hash | ✅ | {is_success, result_value[]} |
-| screener | GET | URL hash | ✅ | 裸数组[]（1096×106） |
-| curresult | GET | URL hash | ⚠️空 | {is_success, result_value:[]} |
-| **dividend** | **POST** | **body hash** | ✅直连 | {is_success, result_value[{f_year,ex_date,pay_date,en_type,div_cent}]} |
-| **qresult** | **POST** | **body hash** | ⚠️无数据 | {is_success:false, err_msg:No data} |
-| **warrant** | **POST** | **body hash** | ⚠️空 | {result_value[]} |
-| chart×3 | GET | URL hash | ✅ | HTML 图表 |
+- regusr: `https://stockhunter.my/api/klse/regusr.php` GET（返回 err_msg 1011，参数未完全逆向）
+- check_app_ver: `http://freeinfo.my/api/klse/check_app_ver.php` GET
+- news topic: `http://freeinfo.my/api/klse/getklse_topic_v1.php` GET
+- news bycodelist: `http://freeinfo.my/api/klse/getklsenews_bycodelist_v1.php` GET
+- stkchat: `http://freeinfo.my/api/klse/getklse_stkchat_v1.php` GET
 
-**关键修正（本会话）**：
-1. 所有接口 `req_date` 必须传**明天**（服务端时区偏移校验）
-2. news/index/hot/screener 用 **GET**（URL 拼 hash）
-3. dividend/qresult/warrant 用 **POST**（body 放 hash）——之前误用 GET 导致空响应
-4. 之前网页经 Worker 代理调 POST 全空 = **代理不支持 POST**，直连 POST 全通
+---
+
+## 六、总结（直连实测）
+
+| 类别 | 状态 |
+|---|---|
+| news/social/hotstock/index/screener | ✅ 全活（GET+AES） |
+| json_cache v1/v2（Overview/TopGainer/Loser/Trend/Growth/TopProfit/NetCash/Toploss/Shariah/HotList/Momentum/Sector/Warrant系列/LatestQ/TopRevenue） | ✅ 全活（GET+AES id=N） |
+| dividend | ✅ 活（POST+AES body） |
+| qresult/prospect_v1 | ⚠️ 接口活但无数据 |
+| warrant id=38 | ⚠️ 接口活但数据源空 |
+| curresult/tech id=8/watchlist id=2 | ⚠️ 空（需登录或下线） |
+| klsegroup.com 系列 | ❌ DNS 死（get_json.php 等全 11001） |
+
+**本会话关键修正**：
+1. `req_date` 传明天（服务端时区偏移校验）
+2. json_cache 用 **AES("id=N")** 不是明文 `?id=N`（之前误用明文返 OS:NA 判死，实测 AES 全活）
+3. dividend/qresult 是 **POST**（body hash），直连通；经 Cloudflare Worker 代理 POST 被吞（代理只转发 GET）
+4. warrant id=38 是 GET+AES（非 POST），但数据源返回空

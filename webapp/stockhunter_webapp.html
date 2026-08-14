@@ -403,11 +403,10 @@ async function loadScreener(){
 
 // ===== 图表 =====
 async function loadChart(){ const t=document.getElementById('chart-type').value, code=document.getElementById('chart-code').value; const el=document.getElementById('chart-body');
-  let u,enc=true,base,params;
-  if(t==='adam'){ base="http://www.stockhunter.my/api/klse/get_chart_adam.php"; params="StkCode="+code+"&req_date="+today(); }
-  else if(t==='mom'){ base="http://www.stockhunter.my/api/klse/get_chart_mom_subsector.php"; params="req_date="+today(); }
-  else { base="http://www.freeinfo.my/api/klse/get_chart_happypanic.php"; params="req_date="+today(); }
-  const target=base+"?"+(enc?("hash="+encodeURIComponent(aesEncrypt(params))+"&os=and"):params);
+  let target;
+  if(t==='adam'){ target="http://klsechart.my/ai/ai_adam.php?code="+code; }  // 真活接口 (明文, 返回预测文本+Google蜡烛图)
+  else if(t==='mom'){ target="http://www.stockhunter.my/api/klse/get_chart_mom_subsector.php?hash="+encodeURIComponent(aesEncrypt("req_date="+today()))+"&os=and"; }
+  else { target="http://www.freeinfo.my/api/klse/get_chart_happypanic.php?hash="+encodeURIComponent(aesEncrypt("req_date="+today()))+"&os=and"; }
   document.getElementById('chart-iframe').src=PROXY+encodeURIComponent(target);
 }
 </script>
