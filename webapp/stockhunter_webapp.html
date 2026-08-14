@@ -3,173 +3,276 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>StockHunter WebApp (纯前端还原版)</title>
+<title>StockHunter WebApp (纯前端还原版 v2)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 <style>
-  * { box-sizing:border-box; font-family:-apple-system,"Segoe UI",Roboto,"Microsoft YaHei",sans-serif; }
-  body { margin:0; background:#0f1419; color:#e6e6e6; }
-  header { background:#1a2332; padding:12px 16px; font-weight:700; font-size:18px; border-bottom:1px solid #2a3650; }
-  header small { font-weight:400; color:#7a8aa0; font-size:12px; }
-  nav { display:flex; flex-wrap:wrap; gap:4px; background:#141c28; padding:8px; border-bottom:1px solid #2a3650; position:sticky; top:0; z-index:10; }
-  nav button { background:#22304a; color:#cdd; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-size:13px; }
-  nav button.active { background:#3a6ea5; color:#fff; }
-  .tab { display:none; padding:16px; } .tab.active { display:block; }
-  table { width:100%; border-collapse:collapse; font-size:13px; }
-  th,td { padding:6px 8px; text-align:left; border-bottom:1px solid #1f2a3a; white-space:nowrap; }
-  th { background:#1a2332; color:#9ab; position:sticky; top:48px; }
-  .up,.pos { color:#26a65b; } .down,.neg { color:#e74c3c; } .flat { color:#888; }
-  input,select,textarea { background:#0f1419; color:#e6e6e6; border:1px solid #2a3650; border-radius:4px; padding:6px 8px; margin:2px; }
-  .filters { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:12px; }
-  iframe { width:100%; height:520px; border:1px solid #2a3650; border-radius:6px; background:#fff; }
-  .card { background:#141c28; border:1px solid #2a3650; border-radius:8px; padding:12px; margin-bottom:12px; }
-  .loading { color:#7a8aa0; padding:20px; }
-  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; } @media(max-width:800px){ .grid2{ grid-template-columns:1fr; } }
-  a { color:#5aa9e6; } .tag { display:inline-block; background:#22304a; border-radius:4px; padding:2px 6px; margin:2px; font-size:11px; }
-  .yahoo-box { background:#10241a; border:1px solid #2a5040; border-radius:8px; padding:12px; margin-bottom:12px; }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,Segoe UI,Arial,sans-serif;margin:0;background:#eef1f4;color:#222}
+  header{background:#0e6e7d;color:#fff;padding:10px 16px;font-size:18px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+  header a{color:#fff;font-size:13px;text-decoration:none;background:rgba(255,255,255,.2);padding:4px 10px;border-radius:4px}
+  .tabs{display:flex;flex-wrap:wrap;background:#0e6e7d;padding:0 8px}
+  .tabs button{background:none;border:none;color:#cdeef3;padding:10px 14px;cursor:pointer;font-size:14px;border-bottom:3px solid transparent}
+  .tabs button.active{color:#fff;border-bottom-color:#ffd34d;font-weight:700}
+  main{padding:16px;max-width:1100px;margin:0 auto}
+  .panel{display:none}.panel.active{display:block}
+  .loading{color:#888;padding:20px}
+  table{width:100%;border-collapse:collapse;background:#fff;font-size:13px;margin-top:8px}
+  th,td{border:1px solid #e1e4e8;padding:6px 8px;text-align:left}
+  th{background:#f0f3f5}
+  .up{color:#1a7f4b}.down{color:#c0392b}
+  .card{background:#fff;border:1px solid #e1e4e8;border-radius:6px;padding:10px 12px;margin:8px 0;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .tag{display:inline-block;padding:1px 7px;border-radius:3px;font-size:11px;margin:1px;color:#fff}
+  .tag.b{background:#8e44ad}.tag.g{background:#27ae60}.tag.o{background:#e67e22}.tag.y{background:#f1c40f;color:#333}.tag.bl{background:#2980b9}
+  input,select{padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:13px}
+  button.go{background:#0e6e7d;color:#fff;border:none;padding:6px 12px;border-radius:4px;cursor:pointer}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+  .stat{background:#fff;border:1px solid #e1e4e8;border-radius:6px;padding:10px;text-align:center}
+  .stat .n{font-size:22px;font-weight:800}
+  iframe{border:1px solid #ddd;width:100%;height:520px;background:#fff}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 </style>
 </head>
 <body>
-<header>📈 StockHunter WebApp <small>纯前端还原版 · 你的 Worker 代理 + crypto-js · 零后端</small></header>
-<nav>
-  <button data-t="market" class="active">行情(SH)</button>
-  <button data-t="yahoo">实时行情(Yahoo)</button>
-  <button data-t="index">指数</button>
-  <button data-t="hot">热门股</button>
-  <button data-t="news">新闻</button>
-  <button data-t="div">股息</button>
-  <button data-t="screen">选股 Screener</button>
-  <button data-t="chart">图表</button>
-</nav>
+<header>
+  <span>📈 StockHunter WebApp</span>
+  <a href="feature-checklist.html">功能清单</a>
+</header>
+<div class="tabs" id="tabs"></div>
+<main>
+  <!-- 个股 -->
+  <section class="panel" id="p-stock">
+    <div class="row">
+      <input id="stock-code" placeholder="代码 如 1155" value="1155" size="10">
+      <button class="go" onclick="loadStock()">查询个股</button>
+      <span id="stock-name" style="font-weight:700;color:#0e6e7d"></span>
+    </div>
+    <div class="row">
+      <button class="go" onclick="loadFundamental()">FUNDAMENTAL</button>
+      <button class="go" onclick="loadTechnical()">TECHNICAL</button>
+      <button class="go" onclick="loadQResult()">Q-RESULT</button>
+      <button class="go" onclick="loadDividend()">DIVIDEND</button>
+      <button class="go" onclick="loadWarrant()">WARRANT</button>
+      <button class="go" onclick="loadStockNews()">NEWS</button>
+      <button class="go" onclick="loadAdam()">ADAM图表</button>
+    </div>
+    <div id="stock-body" class="loading">输入代码查询…</div>
+  </section>
 
-<div id="market" class="tab active"><div class="card">StockHunter 实时行情 — <code>getcurresult_v1.php</code></div><div id="market-body" class="loading">加载中…</div></div>
-<div id="yahoo" class="tab"><div class="card yahoo-box">Yahoo Finance 真实马股行情（你的代理直连）— 输入代码如 <b>1155.KL</b>（大众银行）/ <b>KLSE</b>（指数）</div><div class="filters">代码: <input id="yh-sym" placeholder="1155.KL" size="12"> <button onclick="loadYahoo()">查询</button> <span id="yh-meta" class="tag"></span></div><div id="yahoo-body" class="loading">输入代码查询</div></div>
-<div id="index" class="tab"><div class="filters">区域: <select id="idx-region"><option value="index">马来西亚</option><option value="ASEAN">东盟</option><option value="ASIA">亚洲</option><option value="WORLD">全球</option></select> <button onclick="loadIndex()">查询</button></div><div id="index-body" class="loading">选择区域查询</div></div>
-<div id="hot" class="tab"><div class="filters">区间: <select id="hot-day"><option value="1">1天</option><option value="7">7天</option><option value="30">30天</option></select> <button onclick="loadHot()">查询</button></div><div id="hot-body" class="loading">选择区间查询</div></div>
-<div id="news" class="tab"><div class="filters">类型: <select id="news-kind"><option value="bycode">个股新闻</option><option value="social">社媒讨论</option></select> 代码: <input id="news-stk" placeholder="如 7315" size="8"> <button onclick="loadNews()">查询</button></div><div id="news-body" class="loading">输入代码查询</div></div>
-<div id="div" class="tab"><div class="filters">代码: <input id="div-stk" placeholder="如 7315" size="8"> <button onclick="loadDiv()">查询股息</button></div><div id="div-body" class="loading">输入代码查询</div></div>
-<div id="screen" class="tab">
-  <div class="card"><b>选股 Screener</b>（klsestock.com/json_filter_v1.php）<div style="margin-top:8px">
-    <button onclick="setPreset('breakout')">突破+净现金</button>
-    <button onclick="setPreset('netcash')">仅净现金</button>
-    <button onclick="setPreset('lowpe')">低PE(gold)</button>
-    <button onclick="setPreset('macdup')">MACD金叉(gold)</button>
-  </div></div>
-  <div class="filters"><textarea id="screen-q" rows="2" style="width:100%;background:#0f1419;color:#e6e6e6;border:1px solid #2a3650;border-radius:4px;padding:6px" placeholder="id=20&bo=1&yh=0&tp=0&gw=0&nc=1&iw=0&day=&type=&trend=&pri_mi=&pri_mx=&sector="></textarea></div>
-  <div class="filters"><button onclick="loadScreen()">运行选股</button> <span id="screen-count" class="tag"></span></div>
-  <div id="screen-body" class="loading">点击运行选股</div>
-  <details style="margin-top:12px;color:#7a8aa0;font-size:12px"><summary>参数 schema（逆向自 Fragment_GrabStock.runVolley）</summary>
-    <p><b>基础(SA):</b> id=20 · bo=突破 · yh=年高 · tp=最高盈利 · gw=金叉 · nc=净现金 · iw=权证 · day=天数 · type=报告类型 · trend=趋势 · pri_mi/pri_mx=价区间 · sector=板块</p>
-    <p><b>基本面(FA,Gold):</b> pe · pm=利润率 · ev · dc=债现比 · cr=流动比 · ey=盈利收益率 · roe · dy=股息率 · pob=市净率 · m_cap_min/max=市值 · t_share_min/max=总股数</p>
-    <p><b>技术(TA,Gold):</b> iv=量增 · macd · rsi_c/rsi_v · obv · ms=市场信号 · ma1/ma_c1/ma2/ma_c2/ma3 · macd_day · bb=布林带 · turn_ov_min/max=成交额 · mom_status</p>
-    <p><b>K线(19种,Gold):</b> hammer harami kicking piercing tristar dojistar haramicross morningstar threeoutside engulfing abandonbaby dragonflydoji marubozu upgapsidebyside invertedhammer takuri morningdojistar tasukigap threelinestrike threewhitesoldiers (0/1)</p>
-    <p><b>MA映射:</b> 0=Price 1=EMA10 2=EMA20 3=EMA25 4=EMA50 5=SMA10 6=SMA20 7=SMA60 8=SMA200</p>
-  </details>
-</div>
-<div id="chart" class="tab"><div class="filters">类型: <select id="chart-type"><option value="adam">ADAM个股图</option><option value="mom_subsector">Momentum板块</option><option value="happypanic">Happy/Panic市场</option></select> 代码(adam): <input id="chart-stk" placeholder="如 7315" size="8"> <button onclick="loadChart()">打开</button></div><div id="chart-body"><iframe id="chart-frame" src="about:blank"></iframe></div></div>
+  <!-- 行情/榜单 -->
+  <section class="panel" id="p-market">
+    <div class="row">
+      <button class="go" onclick="cacheList('1','Overview 市场统计')">Overview</button>
+      <button class="go" onclick="cacheList('26','Top Gainer(额)')">Top Gainer</button>
+      <button class="go" onclick="cacheList('27','Top Loser')">Top Loser</button>
+      <button class="go" onclick="cacheList('28','Top Gain %')">Top Gain%</button>
+      <button class="go" onclick="cacheList('29','Top Lose %')">Top Lose%</button>
+    </div>
+    <div id="market-body" class="loading"></div>
+  </section>
+
+  <!-- 热门 -->
+  <section class="panel" id="p-hot">
+    <div class="row">
+      <select id="hot-day"><option value="1">DAY</option><option value="7">WEEK</option><option value="30">MONTH</option></select>
+      <button class="go" onclick="loadHot()">加载热门</button>
+    </div>
+    <div id="hot-body" class="loading"></div>
+  </section>
+
+  <!-- 指数 -->
+  <section class="panel" id="p-index">
+    <div class="row">
+      <select id="idx-region"><option value="ASIA">ASIA</option><option value="WORLD">WORLD</option><option value="ASEAN">ASEAN</option><option value="index">MALAYSIA</option></select>
+      <button class="go" onclick="loadIndex()">加载指数</button>
+    </div>
+    <div id="index-body" class="loading"></div>
+  </section>
+
+  <!-- 新闻 -->
+  <section class="panel" id="p-news">
+    <div class="row">
+      <select id="news-kind"><option value="news">Economic/个股</option><option value="social">Social</option></select>
+      <input id="news-stk" placeholder="个股代码(留空=全局)" size="10">
+      <button class="go" onclick="loadNews()">加载新闻</button>
+    </div>
+    <div id="news-body" class="loading"></div>
+  </section>
+
+  <!-- 选股 -->
+  <section class="panel" id="p-screener">
+    <div class="row">
+      <label>突破 <input type="checkbox" id="f-bo"></label>
+      <label>年高 <input type="checkbox" id="f-yh"></label>
+      <label>最高盈利 <input type="checkbox" id="f-tp"></label>
+      <label>金叉 <input type="checkbox" id="f-gw"></label>
+      <label>净现金 <input type="checkbox" id="f-nc"></label>
+      <label>权证 <input type="checkbox" id="f-iw"></label>
+    </div>
+    <div class="row">
+      价格 <input id="f-pmin" placeholder="min" size="6"> - <input id="f-pmax" placeholder="max" size="6">
+      板块 <input id="f-sector" placeholder="如 CONSUMER" size="14">
+      <button class="go" onclick="loadScreener()">选股</button>
+    </div>
+    <div id="screener-body" class="loading"></div>
+  </section>
+
+  <!-- 图表 -->
+  <section class="panel" id="p-chart">
+    <div class="row">
+      <select id="chart-type"><option value="adam">ADAM</option><option value="mom">板块动量</option><option value="happy">Happy/Panic</option></select>
+      <input id="chart-code" placeholder="ADAM需代码" size="10" value="1155">
+      <button class="go" onclick="loadChart()">加载图表</button>
+    </div>
+    <div id="chart-body"><iframe id="chart-iframe"></iframe></div>
+  </section>
+</main>
 
 <script>
 // ===== 配置 =====
-// 替换为你自己的 CORS 代理 (见 README §9)。示例: https://your-worker.your-subdomain.workers.dev/?url=
-const PROXY = "https://YOUR-CORS-PROXY.example.com/?url=";
-const KEY = "Kls3@p#GI3ch!qEh";
-const VER = "3.7.1", SN = "own";
+const PROXY = "https://YOUR-CORS-PROXY.example.com/?url="; // 改成你的 Worker 代理
+const ORIGIN = "https://stockhunter.netlify.app";
+const KEY = CryptoJS.enc.Utf8.parse("Kls3@p#GI3ch!qEh");
+const IVZ = CryptoJS.lib.WordArray.create([0,0,0,0]); // 16 zero bytes (AES block = 4 words of 32-bit = 16 bytes)
 
-// AES-256-CBC, iv=全0, PKCS7, Base64 —— 与 APK AES256Cipher 一致
 function aesEncrypt(plain){
-  const k = CryptoJS.enc.Utf8.parse(KEY);
-  const iv = CryptoJS.enc.Utf8.parse("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
   const pt = CryptoJS.enc.Utf8.parse(plain);
-  return CryptoJS.AES.encrypt(pt, k, {iv:iv, mode:CryptoJS.mode.CBC, padding:CryptoJS.pad.Pkcs7}).toString();
+  const ct = CryptoJS.AES.encrypt(pt, KEY, {iv:IVZ, mode:CryptoJS.mode.CBC, padding:CryptoJS.pad.Pkcs7});
+  return ct.toString(); // Base64 (crypto-js 默认输出即 Base64)
 }
 function today(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
-// 经你的 Worker 代理发请求 (Worker 要求带 Origin 才放行)
+function shUrl(base, params, enc=true){
+  const hash = enc ? aesEncrypt(params) : params;
+  return base + "?" + (enc?"hash="+encodeURIComponent(hash)+"&os=and":"id="+hash);
+}
 async function getJSON(targetUrl){
-  const r = await fetch(PROXY + encodeURIComponent(targetUrl), {
-    headers:{"User-Agent":"Mozilla/5.0","Origin":"https://stockhunter.netlify.app"}
-  });
-  if(!r.ok) throw new Error("代理返回 "+r.status+" (Worker 要求来自允许域的 Origin)");
+  const r = await fetch(PROXY + encodeURIComponent(targetUrl), {headers:{"User-Agent":"Mozilla/5.0","Origin":ORIGIN}});
   return await r.json();
 }
-function shUrl(base, params, withVer){ // StockHunter 加密 URL
-  const p = withVer ? (params+"&ver="+VER+"&sn="+SN) : params;
-  return base + "?hash=" + encodeURIComponent(aesEncrypt(p)) + "&os=and";
+const pct = v => v==null?'':(v>0?'<span class="up">+'+v+'</span>':'<span class="down">'+v+'</span>');
+const arr = d => Array.isArray(d)?d : (d&&d.result_value)?d.result_value : (d&&Array.isArray(d.data)?d.data:[]);
+
+// ===== 标签页 =====
+const tabs = [["p-stock","个股"],["p-market","行情/榜"],["p-hot","热门"],["p-index","指数"],["p-news","新闻"],["p-screener","选股"],["p-chart","图表"]];
+const tb = document.getElementById('tabs');
+tabs.forEach(([id,label],i)=>{
+  const b=document.createElement('button'); b.textContent=label; if(i===0)b.className='active';
+  b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.className='');b.className='active';document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');};
+  tb.appendChild(b);
+});
+document.getElementById('p-stock').classList.add('active');
+
+// ===== 个股 =====
+let CUR={};
+async function loadStock(){
+  const code=document.getElementById('stock-code').value.trim();
+  const el=document.getElementById('stock-body'); el.className='loading'; el.textContent='加载中…';
+  try{
+    const u=shUrl("http://freeinfo.my/api/klse/getcurresult_v1.php","req_date="+today());
+    const d=await getJSON(u); const r=arr(d)[0]||{}; CUR=r;
+    document.getElementById('stock-name').textContent=r.stockname||code;
+    el.className=''; el.innerHTML=`<div class="card">
+      <b>现价</b> ${r.price||r.pri_now||'-'} <span>${pct(r.pri_chg)} ${r.pri_chg_pcn||''}%</span><br>
+      Bid/Ask: ${r.pri_bid||'-'} / ${r.pri_ask||'-'} · 量: ${r.volumn||r.vol_now||'-'}<br>
+      年高/低: ${r.pri_year_high||'-'} / ${r.pri_year_low||'-'} · 200/20ma: ${r.pri_ma200||'-'} / ${r.pri_ma20||'-'}
+    </div>`;
+  }catch(e){ el.textContent='错误: '+e; }
+}
+async function loadFundamental(){ const el=document.getElementById('stock-body'); el.className='loading'; el.textContent='加载中…';
+  try{ const u=shUrl("http://freeinfo.my/api/klse/getklsediv_bycode_v1.php","StkCode="+CUR.stockcode); const d=await getJSON(u);
+    el.className=''; el.innerHTML=`<div class="card"><b>FUNDAMENTAL</b><br>PE: ${CUR.pe||'-'} · ROE: ${CUR.roe||'-'}% · EV/EBIT: ${CUR.EV_EBIT||'-'} · 股息率: ${CUR.dy||'-'}%<br>市净率: ${CUR.pri_of_book||'-'} · 流动比: ${CUR.current_ratio||'-'} · 净现金: ${CUR.net_cash||'-'} · 债务现金比: ${CUR.debt_cash||'-'}<br>股息(DPS): ${CUR.dps||'-'} · NTA: ${CUR.nta||'-'} · 市值: ${CUR.market_cap||'-'}</div>`+(d.result_value?('<div class="card">'+JSON.stringify(d.result_value).slice(0,300)+'</div>'):'');
+  }catch(e){ el.textContent='错误: '+e; }
+}
+async function loadTechnical(){ const el=document.getElementById('stock-body'); el.className='';
+  el.innerHTML=`<div class="card"><b>TECHNICAL</b><br>MACD: ${CUR.macd||'-'} (signal ${CUR.macd_signal||'-'}) · RSI: ${CUR.rsi||'-'} · OBV: ${CUR.obv||'-'} ${CUR.obv_sid||''}<br>布林带: ${CUR.pri_bb_up||'-'}~${CUR.pri_bb_down||'-'} · 金叉: ${CUR.ema_golden_cross||'-'} · 动量: ${CUR.mom_strength||'-'}<br>形态: ${CUR.candle_desc||'-'}</div>`;
+}
+async function loadQResult(){ const el=document.getElementById('stock-body'); el.className='loading'; el.textContent='加载中…';
+  try{ const u=shUrl("http://www.freeinfo.my/api/klse/getklseprospect_bycode_v1.php","stk_code="+CUR.stockcode+"&q_year=&PostId=&KeywId=&req_date="+today()+"&os=and");
+    const d=await getJSON(u); const r=arr(d)[0]||{};
+    el.className=''; el.innerHTML=`<div class="card"><b>Q-RESULT</b><br>${JSON.stringify(r).slice(0,400)}</div>`;
+  }catch(e){ el.textContent='错误: '+e; }
+}
+async function loadDividend(){ const el=document.getElementById('stock-body'); el.className='loading'; el.textContent='加载中…';
+  try{ const u=shUrl("http://www.freeinfo.my/api/klse/getklsediv_bycode_v1.php","StkCode="+CUR.stockcode+"&req_date="+today());
+    const d=await getJSON(u); const rs=arr(d);
+    let h='<div class="card"><b>DIVIDEND</b><table><tr><th>FY</th><th>DPS</th><th>Ex</th><th>Pay</th><th>公告</th></tr>';
+    rs.slice(0,10).forEach(x=>h+=`<tr><td>${x.fy||x.financial_year||''}</td><td>${x.dps||x.dividend||''}</td><td>${x.ex_date||''}</td><td>${x.pay_date||''}</td><td>${x.announced||''}</td></tr>`);
+    h+='</table></div>'; el.className=''; el.innerHTML=h||'(无股息)';
+  }catch(e){ el.textContent='错误: '+e; }
+}
+async function loadWarrant(){ const el=document.getElementById('stock-body'); el.className='loading'; el.textContent='加载中…';
+  try{ const u="http://www.klsestock.com/json_cache_v2.php?id=38&code="+CUR.stockcode; const d=await getJSON(u);
+    let h='<div class="card"><b>WARRANT</b><table><tr><th>代码</th><th>名</th><th>价</th><th>涨跌%</th><th>量</th></tr>';
+    arr(d).slice(0,30).forEach(w=>h+=`<tr><td>${w.code||w.stk_code||''}</td><td>${w.name||w.stockname||''}</td><td>${w.price||w.pri_now||''}</td><td>${pct(w.chg_pct)}</td><td>${w.volume||''}</td></tr>`);
+    h+='</table></div>'; el.className=''; el.innerHTML=h||'(无权证)';
+  }catch(e){ el.textContent='错误: '+e; }
+}
+async function loadStockNews(){ const el=document.getElementById('stock-body'); el.className='loading'; el.textContent='加载中…';
+  try{ const u=shUrl("http://www.freeinfo.my/api/klse/getklsenews_bycode_v2.php","StkCode="+CUR.stockcode+"&PostId=&Cat=&Lang=1&keywId="+CUR.stockcode+"&req_date="+today());
+    const d=await getJSON(u); let h=''; arr(d).slice(0,15).forEach(n=>h+=`<div class="card"><b>${n.title||''}</b><br><small>${n.date||n.time||''}</small><br>${n.desc||n.summary||''}</div>`);
+    el.className=''; el.innerHTML=h||'(无新闻)';
+  }catch(e){ el.textContent='错误: '+e; }
+}
+async function loadAdam(){ const code=CUR.stockcode||document.getElementById('stock-code').value;
+  document.getElementById('chart-type').value='adam'; document.getElementById('chart-code').value=code; loadChart();
 }
 
-// ===== UI =====
-function tab(t){ document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active')); document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelector(`nav button[data-t="${t}"]`).classList.add('active'); }
-document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
-function pct(v){ if(v==null) return ''; const s=String(v); if(s.startsWith('+')) return `<span class="pos">${s}</span>`; if(s.startsWith('-')) return `<span class="neg">${s}</span>`; return s; }
-function arr(d){ return Array.isArray(d)?d:[d]; }
+// ===== 行情/榜单 (json_cache) =====
+async function cacheList(id,title){ const el=document.getElementById('market-body'); el.className='loading'; el.textContent='加载中… ('+title+')';
+  try{ const v = ['3','26','27','28','29'].includes(id)?'v2':'v1'; const u="http://www.klsestock.com/json_cache_"+v+".php?id="+id;
+    const d=await getJSON(u); let h=`<div class="card"><b>${title}</b></div><table><tr><th>代码</th><th>名</th><th>价</th><th>涨跌%</th><th>量</th><th>PE</th><th>DY</th><th>ROE</th></tr>`;
+    arr(d).slice(0,50).forEach(r=>h+=`<tr><td>${r.stk_code||r.code||''}</td><td>${r.stockname||r.name||''}</td><td>${r.price||r.pri_now||''}</td><td>${pct(r.chg_pct||r.pri_chg_pcn)}</td><td>${r.volume||r.volumn||''}</td><td>${r.pe||''}</td><td>${r.dy||''}</td><td>${r.roe||''}</td></tr>`);
+    h+='</table>'; el.className=''; el.innerHTML=h;
+  }catch(e){ el.textContent='错误: '+e; }
+}
 
-// 行情(SH)
-async function loadMarket(){ const el=document.getElementById('market-body'); el.className='loading'; el.textContent='加载中…';
-  try{ const u=shUrl("http://freeinfo.my/api/klse/getcurresult_v1.php","req_date="+today(),false);
-    const d=await getJSON(u); let h='<table><tr><th>代码</th><th>名称</th><th>现价</th><th>涨跌</th><th>%</th><th>量</th><th>板块</th></tr>';
-    arr(d).slice(0,80).forEach(r=>{ h+=`<tr><td>${r.stk_code||r.stockcode||''}</td><td>${r.stockname||''}</td><td>${r.pri_now||r.price||''}</td><td>${pct(r.pri_chg)}</td><td>${pct(r.pri_chg_pcn)}</td><td>${r.vol_now||r.volumn||''}</td><td>${r.sikl_main_sector||''}</td></tr>`; });
-    h+='</table>'; el.className=''; el.innerHTML=h; }catch(e){ el.textContent='错误: '+e; }
-}
-// Yahoo 真实行情
-async function loadYahoo(){ const sym=document.getElementById('yh-sym').value||'1155.KL'; const el=document.getElementById('yahoo-body'); el.className='loading'; el.textContent='加载中…';
-  try{ const u=PROXY+encodeURIComponent("https://query1.finance.yahoo.com/v8/finance/chart/"+sym+"?interval=1d&range=1mo");
-    const d=await (await fetch(u)).json(); const m=d.chart.result[0].meta;
-    document.getElementById('yh-meta').textContent = m.shortName+" "+m.currency+" "+m.exchangeName;
-    const q=m.regularMarketPrice, pc=m.previousClose, chg=q-pc, pctc=(chg/pc*100).toFixed(2);
-    let h=`<div class="yahoo-box"><b>${m.symbol}</b> ${m.shortName}<br>现价 <b>${q}</b> ${m.currency} &nbsp; 涨跌 <span class="${chg>=0?'pos':'neg'}">${chg.toFixed(3)} (${chg>=0?'+':''}${pctc}%)</span><br>前收 ${pc} · 开 ${m.regularMarketOpen} · 高 ${m.regularMarketDayHigh} · 低 ${m.regularMarketDayLow} · 量 ${m.regularMarketVolume}</div>`;
-    const closes=d.chart.result[0].indicators.quote[0].close.filter(x=>x!=null);
-    h+=`<svg width="100%" height="200" viewBox="0 0 ${closes.length} 100" preserveAspectRatio="none">`;
-    const mn=Math.min(...closes), mx=Math.max(...closes);
-    closes.forEach((c,i)=>{ const y=100-(c-mn)/(mx-mn)*100; h+=`<line x1="${i}" y1="${y}" x2="${i}" y2="100" stroke="${c>=closes[0]?'#26a65b':'#e74c3c'}" stroke-width="0.5"/>`; });
-    h+='</svg>';
-    el.className=''; el.innerHTML=h; }catch(e){ el.textContent='错误: '+e; }
-}
-// 指数
-async function loadIndex(){ const r=document.getElementById('idx-region').value; const el=document.getElementById('index-body'); el.className='loading'; el.textContent='加载中…';
-  try{ const u=shUrl("http://www.freeinfo.my/api/klse/getklse_index_v1.php","idx_type=index&region="+r+"&location=&req_date="+today(),false);
-    const d=await getJSON(u); let h='<table><tr><th>名称</th><th>点位</th><th>涨跌</th><th>%</th></tr>';
-    arr(d).slice(0,60).forEach(x=>{ h+=`<tr><td>${x.name||x.idx_name||''}</td><td>${x.point||x.value||''}</td><td>${pct(x.chg)}</td><td>${pct(x.chg_pct)}</td></tr>`; });
-    h+='</table>'; el.className=''; el.innerHTML=h; }catch(e){ el.textContent='错误: '+e; }
-}
-// 热门
+// ===== 热门 =====
 async function loadHot(){ const d=document.getElementById('hot-day').value; const el=document.getElementById('hot-body'); el.className='loading'; el.textContent='加载中…';
   try{ const u=shUrl("http://freeinfo.my/api/klse/getklse_hotstk_v1.php","day="+d+"&Lang=1&req_date="+today(),false);
     const data=await getJSON(u); let h='<table><tr><th>代码</th><th>名称</th><th>价</th><th>涨跌%</th><th>量</th></tr>';
     arr(data).slice(0,60).forEach(r=>{ h+=`<tr><td>${r.stk_code||r.stockcode||''}</td><td>${r.stockname||''}</td><td>${r.price||r.pri_now||''}</td><td>${pct(r.chg_pct||r.pri_chg_pcn)}</td><td>${r.volume||r.volumn||''}</td></tr>`; });
-    h+='</table>'; el.className=''; el.innerHTML=h; }catch(e){ el.textContent='错误: '+e; }
+    h+='</table>'; el.className=''; el.innerHTML=h;
+  }catch(e){ el.textContent='错误: '+e; }
 }
-// 新闻
+
+// ===== 指数 =====
+async function loadIndex(){ const r=document.getElementById('idx-region').value; const el=document.getElementById('index-body'); el.className='loading'; el.textContent='加载中…';
+  try{ const u=shUrl("http://www.freeinfo.my/api/klse/getklse_index_v1.php","idx_type=index&region="+r+"&location=&req_date="+today(),false);
+    const d=await getJSON(u); let h='<table><tr><th>名称</th><th>点位</th><th>涨跌</th><th>%</th></tr>';
+    arr(d).slice(0,60).forEach(x=>{ h+=`<tr><td>${x.name||x.idx_name||''}</td><td>${x.point||x.value||''}</td><td>${pct(x.chg)}</td><td>${pct(x.chg_pct)}</td></tr>`; });
+    h+='</table>'; el.className=''; el.innerHTML=h;
+  }catch(e){ el.textContent='错误: '+e; }
+}
+
+// ===== 新闻 =====
 async function loadNews(){ const k=document.getElementById('news-kind').value, s=document.getElementById('news-stk').value; const el=document.getElementById('news-body'); el.className='loading'; el.textContent='加载中…';
   try{ const base = k==='social' ? "http://freeinfo.my/api/klse/getklse_social_v1.php" : "http://www.freeinfo.my/api/klse/getklsenews_bycode_v2.php";
     const p = `StkCode=${s}&PostId=&Cat=&Lang=1${k==='social'?'':'&keywId='}&req_date=${today()}`;
     const data=await getJSON(shUrl(base,p,false)); let h='';
     arr(data).slice(0,40).forEach(n=>{ h+=`<div class="card"><b>${n.title||n.headline||'(无标题)'}</b><br><small>${n.date||n.time||''} · ${n.source||''}</small><br>${n.summary||n.desc||''}</div>`; });
-    el.className=''; el.innerHTML=h||'(无结果)'; }catch(e){ el.textContent='错误: '+e; }
-}
-// 股息
-async function loadDiv(){ const s=document.getElementById('div-stk').value; const el=document.getElementById('div-body'); el.className='loading'; el.textContent='加载中…';
-  try{ const d=await getJSON(shUrl("http://www.freeinfo.my/api/klse/getklsediv_bycode_v1.php","StkCode="+s+"&req_date="+today(),false));
-    let h='<table><tr><th>年份</th><th>每股股息</th><th>除权日</th><th>收益率</th></tr>';
-    arr(d).slice(0,30).forEach(x=>{ h+=`<tr><td>${x.year||''}</td><td>${x.div||x.dps||''}</td><td>${x.ex_date||x.date||''}</td><td>${x.yield||x.dy||''}</td></tr>`; });
-    h+='</table>'; el.className=''; el.innerHTML=h; }catch(e){ el.textContent='错误: '+e; }
-}
-// Screener
-function setPreset(p){ const q={ breakout:'id=20&bo=1&yh=0&tp=0&gw=0&nc=1&iw=0&day=&type=&trend=&pri_mi=&pri_mx=&sector=', netcash:'id=20&bo=0&yh=0&tp=0&gw=0&nc=1&iw=0&day=&type=&trend=&pri_mi=&pri_mx=&sector=', lowpe:'id=20&bo=0&yh=0&tp=0&gw=0&nc=0&iw=0&day=&type=&trend=&pri_mi=&pri_mx=&sector=&pe=0&pe_c=1', macdup:'id=20&bo=0&yh=0&tp=0&gw=0&nc=0&iw=0&day=&type=&trend=&pri_mi=&pri_mx=&sector=&macd=1&macd_ab=1' };
-  document.getElementById('screen-q').value=q[p]||''; }
-async function loadScreen(){ const q=document.getElementById('screen-q').value; const el=document.getElementById('screen-body'); el.className='loading'; el.textContent='选股中…';
-  try{ const u=shUrl("http://www.klsestock.com/json_filter_v1.php", q+"&ver="+VER+"&sn="+SN, false);
-    const data=await getJSON(u); document.getElementById('screen-count').textContent='命中 '+(Array.isArray(data)?data.length:0)+' 只';
-    let h='<table><tr><th>代码</th><th>名称</th><th>现价</th><th>涨跌%</th><th>突破</th><th>净现金</th><th>PE</th><th>ROE</th><th>MACD</th><th>RSI</th></tr>';
-    arr(data).slice(0,100).forEach(r=>{ h+=`<tr><td>${r.stockcode||r.stk_code||''}</td><td>${r.stockname||''}</td><td>${r.price||r.pri_now||''}</td><td>${pct(r.pri_chg_pcn)}</td><td>${r.breakout||''}</td><td>${r.net_cash||''}</td><td>${r.pe||''}</td><td>${r.roe||''}</td><td>${r.macd||''}</td><td>${r.rsi||''}</td></tr>`; });
-    h+='</table>'; el.className=''; el.innerHTML=h; }catch(e){ el.textContent='错误: '+e; }
-}
-// 图表 (iframe 嵌入 SH 的 HTML 图表)
-async function loadChart(){ const t=document.getElementById('chart-type').value, s=document.getElementById('chart-stk').value;
-  const base = t==='adam' ? "http://www.stockhunter.my/api/klse/get_chart_adam.php" : t==='mom_subsector' ? "http://www.stockhunter.my/api/klse/get_chart_mom_subsector.php" : "http://www.freeinfo.my/api/klse/get_chart_happypanic.php";
-  const p = t==='adam' ? ("StkCode="+s+"&req_date="+today()) : ("req_date="+today());
-  const u = shUrl(base, p, false);
-  document.getElementById('chart-frame').src = PROXY + encodeURIComponent(u);
+    el.className=''; el.innerHTML=h||'(无结果)';
+  }catch(e){ el.textContent='错误: '+e; }
 }
 
-loadMarket();
+// ===== 选股 =====
+async function loadScreener(){ const el=document.getElementById('screener-body'); el.className='loading'; el.textContent='加载中…';
+  const g=v=>document.getElementById(v).checked?'1':'';
+  const p=`id=20&bo=${g('f-bo')}&yh=${g('f-yh')}&tp=${g('f-tp')}&gw=${g('f-gw')}&nc=${g('f-nc')}&iw=${g('f-iw')}&day=&type=&trend=&pri_mi=${document.getElementById('f-pmin').value}&pri_mx=${document.getElementById('f-pmax').value}&sector=${document.getElementById('f-sector').value}&ver=3.7.1&sn=own`;
+  try{ const u="http://www.klsestock.com/json_filter_v1.php?"+encodeURIComponent("hash="+aesEncrypt(p))+"&os=and";
+    const d=await getJSON(u); let h='<table><tr><th>代码</th><th>名</th><th>价</th><th>PE</th><th>ROE</th><th>DY</th><th>MACD</th><th>RSI</th></tr>';
+    arr(d).slice(0,60).forEach(r=>{ h+=`<tr><td>${r.stockcode||''}</td><td>${r.stockname||''}</td><td>${r.price||''}</td><td>${r.pe||''}</td><td>${r.roe||''}</td><td>${r.dy||''}</td><td>${r.macd||''}</td><td>${r.rsi||''}</td></tr>`; });
+    h+='</table>'; el.className=''; el.innerHTML=h||'(无结果)';
+  }catch(e){ el.textContent='错误: '+e; }
+}
+
+// ===== 图表 =====
+async function loadChart(){ const t=document.getElementById('chart-type').value, code=document.getElementById('chart-code').value; const el=document.getElementById('chart-body');
+  let u,enc=true,base,params;
+  if(t==='adam'){ base="http://www.stockhunter.my/api/klse/get_chart_adam.php"; params="StkCode="+code+"&req_date="+today(); }
+  else if(t==='mom'){ base="http://www.stockhunter.my/api/klse/get_chart_mom_subsector.php"; params="req_date="+today(); }
+  else { base="http://www.freeinfo.my/api/klse/get_chart_happypanic.php"; params="req_date="+today(); }
+  const target=base+"?"+(enc?("hash="+encodeURIComponent(aesEncrypt(params))+"&os=and"):params);
+  document.getElementById('chart-iframe').src=PROXY+encodeURIComponent(target);
+}
 </script>
 </body>
 </html>

@@ -41,11 +41,53 @@
 | 15 | 自选(gold) | `http://freeinfo.my/api/klse/get_goldplus_watchlist_v1.php` | `req_date=YYYY-MM-DD` |
 | 16 | 板块JSON | `http://klsegroup.com/json_cache_v1.php` | `id=2&sector=<sector>` (明文, 无加密) |
 | 17 | AI-ADAM | `http://klsechart.my/ai/ai_adam.php` | `code=<code>` (明文) |
+| 18 | **缓存接口(json_cache)** | `http://www.klsestock.com/json_cache_v1.php` 或 `json_cache_v2.php` | `id=<N>[&code=<code>][&sector=<sec>][&type=<t>][&trend=<t>]` (明文, **无加密**) |
+
+### ⚠️ 第二类接口：`json_cache_v1/v2.php`（明文，无 AES 加密）
+
+StockHunter 的大部分**榜单/统计/列表**功能走这套缓存接口（区别于 screener 的 AES 加密）。Base = `bh_api_url`（`http://www.klsestock.com/`），**参数明文 GET，不加密**。
+
+| id | 功能 | 附加参数 |
+|---|---|---|
+| 1 | Overview 市场统计(涨跌家数/星级) | — |
+| 2 | Watchlist 自选 | `&code=<codes>` |
+| 3 | Hot List (日) | — |
+| 6 | Trend 列表 | `&trend=2/3/4/5` (星级) |
+| 9 | Hot Week | — |
+| 10 | Hot Month | — |
+| 11 | Growth ConQ | — |
+| 12 | Growth YoY | — |
+| 13 | Growth QoQ | — |
+| 16 | Report 列表 | `&type=1/2/3` (1/4/7/10季报) |
+| 17 | Top Profit | — |
+| 18 | Net Cash | — |
+| 19 | Dividend Yield | — |
+| 22 | Top Loss | — |
+| 23 | Hot Shariah | — |
+| 26 | Top Gainer(额) | — |
+| 27 | Top Loser | — |
+| 28 | Top Gain % | — |
+| 29 | Top Lose % | — |
+| 31 | Momentum GapUp | — |
+| 32 | Momentum TurnOver | — |
+| 33 | Sector 列表 | — |
+| 34 | Sector 详情 | `&sector=<sec>` |
+| 35 | Dividend Policy | — |
+| 37 | Latest Quarter Report | — |
+| 38 | **Warrant 列表(个股)** | `&code=<stockcode>` |
+| 39 | Warrant Discount | — |
+| 40 | Warrant Top Volume | — |
+| 41 | Warrant High Turnover | — |
+| 43 | Top Revenue | — |
+| 15 | Report(news) | `json_cache_report_v1.php?id=15` |
+
+> 注意 v1/v2 混用：`id=1/2/6/9-13/16-23/33` 走 `json_cache_v1.php`；`id=3/26-32/34/37-41/43` 走 `json_cache_v2.php`。上端点的 `id` 映射来自 dex 实际代码，覆盖 App 全部列表类功能。
 
 ### ⚠️ 参数坑（实测踩过）
 - **`Lang` 不是 `en`**！取值：`1`=英文, `2`=中文, `""`=都含。用 `en` 服务端返回空。
 - **news 必带 `keywId`**：个股详情传股票 code；全局新闻传空 `keywId=` 也返回数据。
 - **screener 的 `sn`**：源码用 `Build.SERIAL`，实测 `own` 即可。
+- **`json_cache_*` 是明文无加密**——直接 `?id=N` GET，比 screener 简单得多。
 
 ---
 
